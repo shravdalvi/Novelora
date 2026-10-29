@@ -1,0 +1,496 @@
+{
+  "testUsers": {
+    "reader": {
+      "uid": "test-reader-uid-101",
+      "email": "reader@test.com",
+      "password": "password123",
+      "displayName": "Alex Reader",
+      "avatarUrl": "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80",
+      "role": "reader"
+    },
+    "admin": {
+      "uid": "test-admin-uid-001",
+      "email": "admin@novelora.com",
+      "password": "password123",
+      "displayName": "Admin Novelora",
+      "avatarUrl": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80",
+      "role": "admin"
+    }
+  },
+  "subscribers": [
+    {
+      "id": "sub-alex-001",
+      "email": "reader@test.com"
+    },
+    {
+      "id": "sub-newsletter-002",
+      "email": "newsletter@novelora.com"
+    }
+  ],
+  "books": [
+    {
+      "id": "book-echoes-forgotten-realm",
+      "title": "Echoes of the Forgotten Realm",
+      "slug": "echoes-of-the-forgotten-realm",
+      "coverImageUrl": "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=600&auto=format&fit=crop&q=80",
+      "description": "In an ancient world where towering basalt spires pierce storm-torn skies, the remnants of a shattered godhead begin to stir. Lyra, an outcast cartographer bearing forbidden arcana in her bloodline, uncovers an obsidian monolith that whispers secrets of the Shattered Era. As shadowy factions hunt her across volcanic crags and forgotten vaults, she must awaken the slumbering guardians before the realm is consumed by primeval darkness.",
+      "genres": [
+        "Fantasy",
+        "Adventure",
+        "Magic"
+      ],
+      "tags": [
+        "magic",
+        "ancient-ruins",
+        "epic",
+        "dragons",
+        "lore-rich"
+      ],
+      "status": "ongoing",
+      "visibility": "published",
+      "chapterCount": 3,
+      "chapters": [
+        {
+          "id": "ch-echoes-1",
+          "chapterNumber": 1,
+          "title": "The Whispering Monolith",
+          "status": "published",
+          "wordCount": 707,
+          "likeCount": 0,
+          "content": {
+            "type": "doc",
+            "content": [
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "The wind howled across the jagged basalt crags of Mount Vaeloria with the mournful fury of a dying choir, carrying the bitter chill of early winter down into the forsaken valleys below. Cold autumn rain lashed mercilessly against Lyra's weathered leather cloak as she adjusted the heavy brass compass strapped tightly to her left forearm. For thirteen grueling days, she had tracked the subterranean harmonic tremors through the treacherous spine of the northern border mountains, guided solely by fragmentary sketches and cryptic warnings left behind in her late mentor's charred travel journal. The Imperial Synod had long dismissed these desolate northern peaks as barren, uninhabitable stone, suitable only for exiled iron miners and territorial packs of alpine wolves. Yet the geological charts tucked inside her water-sealed satchel revealed an ancient truth far more perilous. Deep beneath the tectonic crust, forgotten ley lines were converging into a geometric nexus that defied natural formation, pulsating with a steady, rhythmic electrostatic discharge that made the fine hair on the nape of her neck stand on end and caused the iron rings braided into her dark hair to hum with unspent magical resonance. Far to the south, the jagged towers of the Imperial Capitol loomed like silent iron sentinels against the gathering thunderclouds, but out here on the frontier, nature and wild magic answered to no emperor. She pulled the fur-lined hood tight over her damp brows, inhaling the sharp copper scent that always signaled imminent magical phenomena."
+                  }
+                ]
+              },
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "Rounding a perilous overhang where loose shale skittered into the fog-shrouded abyss thousands of fathoms below, Lyra finally laid eyes upon the ancient monolith. It stood forty cubits tall, a monolithic spire of pure obsidian carved with terrifying mathematical precision, half-buried in the crushed rubble of a cataclysmic landslide that occurred millennia before the rise of the current dynasties. Unlike the brittle shale surrounding its base, the obsidian surface was mirror-smooth and unnaturally warm, completely free of clinging lichen, mountain moss, or morning frost, drinking the feeble afternoon sunlight without casting an ounce of reflection back into the gray mist. As Lyra drew closer, her breath forming pale specters in the freezing air, the vitreous stone began to ripple like agitated mercury disturbed by a falling pebble. Faint cerulean glyphs ignited deep within the stone's crystalline matrix, illuminating the jagged scars across her knuckles with a soft, bioluminescent aura. They were etched in High Vaelic\u2014the forbidden dead tongue of the First Architect Priesthood\u2014and as she stared into the glowing geometry, the glyphs pulsed in exact synchrony with the frantic pounding of her own accelerated heartbeat. Each glowing character seemed to pulse with suppressed kinetic fury, as if the ancient stone had captured the last dying breath of an elder civilization and was desperately waiting for a worthy inheritor to break the seal. Lyra traced the outer contours of a winged serpent sigil, feeling the ancient basalt vibrate against her fingertips like a living organism."
+                  }
+                ]
+              },
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "With trembling fingers, Lyra peeled off her heavy sheepskin mitten and laid her bare palm against the vibrating glass surface. A sudden shockwave of freezing voltage surged up her forearm, blooming into her sternum like a torrent of liquid silver. Visions slammed into her consciousness with visceral ferocity: vast celestial rings spinning silently above metropolitan citadels carved from living white ivory, sky-drakes harnessed with tethered lightning skimming across boundless azure oceans, and a cataclysmic rift tearing open the fabric of the western horizon as the heavens rained torrents of white fire. When the violent astral surge finally subsided, leaving her gasping on hands and knees against the cold gravel, the monolith went dark once more, save for a solitary crimson sigil burning at its core like a waking dragon's pupil. Far below in the misty foothills, the heavy iron bells of the Imperial garrison fortress began to toll in frantic, syncopated alarm. The ancient ward had fractured after three thousand years of silence, and the forgotten architects of the realm were finally calling their exiled children home. She knew beyond doubt that within hours, the Sovereign Inquisitor would lead elite tracking squads into these desolate ravines, and that there would be no mercy granted to an outcast scholar who had awakened the dormant primordial power of the First Realm."
+                  }
+                ]
+              }
+            ]
+          },
+          "comments": [
+            {
+              "id": "comm-echoes-1",
+              "userId": "test-reader-uid-101",
+              "userName": "Alex Reader",
+              "text": "The atmosphere in this opening is absolutely breathtaking! The description of the monolith and High Vaelic gave me chills."
+            },
+            {
+              "id": "comm-echoes-2",
+              "userId": "test-admin-uid-001",
+              "userName": "Admin Novelora",
+              "text": "Welcome everyone to the official release of Echoes of the Forgotten Realm! Feel free to leave your thoughts below."
+            }
+          ]
+        },
+        {
+          "id": "ch-echoes-2",
+          "chapterNumber": 2,
+          "title": "Across the Obsidian Ridge",
+          "status": "published",
+          "wordCount": 621,
+          "likeCount": 0,
+          "content": {
+            "type": "doc",
+            "content": [
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "The descent from the monolith's crest offered neither comfort nor sanctuary. Ash fell from the smoldering volcanic peaks to the north in lazy, suffocating flurries, coating Lyra's woolen scarf and map cases in a fine blanket of abrasive gray powder. She kept strictly to the shadowed fissures of the obsidian ridge, constantly mindful of the winged sky-drakes that patrolled the high thermal drafts above the imperial highways. Even through the dense cloud cover, the distant glint of polished breastplates signaled that the Inquisitor Vanguard had mobilized far faster than she had anticipated. Their hunting hounds, bred with the bloodline of highland tracking beasts, were capable of catching the faint scent of ozone and spilled blood from several leagues away. The residual arcane energy radiating from the crest burned into her right palm still reeked of ozone, lightning, and sulfur, leaving a faint luminous trail that any seasoned tracker could follow with ease. The smell of brimstone hung thick in the air, mixing with the scent of pine resin and crushed heather whenever her boots disturbed the undergrowth. She checked the silver-inlaid daggers sheathed at her hips, reassuring herself that even in the event of an ambush, she would not be taken alive by the Synod's inquisitors without exacting a bloody toll in return."
+                  }
+                ]
+              },
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "At twilight, having navigated the treacherous scree slopes without triggering a rockfall, she sought refuge within the hollow trunk of a petrified ironwood tree whose ancient timber was dense enough to deflect hunting arrows. She unrolled her parchment map by the dim illumination of an alchemical luminary sphere, carefully tracing the winding pilgrimage path that led toward the Sunken Citadel. According to her master's cryptic marginalia, the monolith she had activated upon the mountain was merely the first node in a septagram array. If the Imperial Synod managed to seize the second node hidden beneath the murky waters of the Sunless Mire, their inquisitors would possess the power to rewrite the fundamental harmonic frequencies of the world, extinguishing magic forever. Lyra chewed slowly on a meager ration of dried venison and stale oatbread, listening intently to the eerie whistles produced by the mountain gales cutting through the petrified boughs above. Every legend spoke of the Sunless Mire as a treacherous wetland where compass needles spun uncontrollably and ancient illusions led unwary travelers into bottomless bogs of stagnant mire. Yet buried beneath those suffocating waters lay the second architectural anchor, a sanctuary that held the forgotten liturgical secrets necessary to reverse the world's slow decay."
+                  }
+                ]
+              },
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "Just past midnight, the sharp clatter of displaced pebbles startled her from a restless, dream-haunted doze. She drew her hunting dagger, its folded-steel blade etched with dampening runes to suppress any reflective gleam, and peered through a split in the petrified wood. Silhouetted against the silver glow of the twin moons stood a solitary wanderer wrapped in tattered archivist robes, leaning heavily upon a shepherd's crook topped with an unlit brass lantern. The wanderer paused, sniffing the crisp mountain air like a predator tasting a scent, before turning a porcelain-masked face directly toward her hollow tree. 'Come out into the moonlight, little cartographer,' a rasping voice echoed inside her mind without a single breath stirring the night air. 'The Inquisitor's hounds have already crossed the lower river gorge, and neither of us has the luxury of wasting precious moments on childish games of hide and seek.' Lyra remained motionless in the shadows of the hollow trunk for three agonizing heartbeats, her thumb resting on the hilt of her blade while her mind raced through every defensive incantation she had memorized. Corvus stood utterly still, his silver-fringed robes billowing like raven wings in the biting alpine wind, his pale porcelain mask catching the silver moonlight."
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "id": "ch-echoes-3",
+          "chapterNumber": 3,
+          "title": "The Vault of Silent Glass",
+          "status": "draft",
+          "wordCount": 564,
+          "likeCount": 0,
+          "content": {
+            "type": "doc",
+            "content": [
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "The subterranean staircase plunged into perpetual, suffocating silence. Hand-hewn directly into the living granite bedrock centuries before the coronation of the first mortal emperor, each step was inlaid with delicate bands of iridescent mother-of-pearl that refracted zero light. Lyra trailed the cloaked archivist down the spiraling shaft, the atmospheric pressure growing progressively heavier with every dozen yards descended. The strange old hermit had introduced himself only as Corvus, an exiled chronicler from the Grand Archives whose tongue had been barbarically severed during the Great Purge of Scholars forty winters ago. Despite his physical muteness, his thoughts projected into Lyra's mind with razor-sharp authority, ringing with the tonal clarity of winter ice fracturing over a deep alpine lake. Every step down felt like trespassing into a tomb reserved for demigods. The subterranean air was so dry that it parched her throat, carrying the faint metallic odor of centuries-old copper dust and dried resin. Every twenty paces, alcoves carved into the granite housed the petrified remains of temple sentinels, their stony fingers still clutching polearms wrought from unyielding celestial bronze that had never known the touch of rust."
+                  }
+                ]
+              },
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "At the base of the winding spiral lay the legendary Vault of Silent Glass. It was a subterranean cavern of breathtaking scale, its vaulted ceiling stretching higher than the nave of any cathedral in the capital, where millions of hexagonal crystals hung suspended in mid-air, held in zero gravity by lingering gravitational enchantments. Inside each floating crystal, preserved in pristine, three-dimensional clarity, rested a living memory from the Golden Age before the Great Shattering. Lyra stared upward in breathless awe as scenes unfolded within the crystal facets: grand skyships propelled by sails of woven starlight, terraced botanical gardens suspended above cloud seas, and treaties sealed with handshakes between elven kings and human chancellors. Yet beneath the majesty lay memories of insidious treason, culminating in the catastrophic sundering of the world's spiritual heartwood. She paused before an immense multifaceted prism that depicted the great conclave of the high magi, where thousands of scholars had gathered beneath celestial spheres to chart the movements of migrating comets. It was heartbreaking to realize how much knowledge had been consumed by fire and fanaticism during the centuries of fear that followed the collapse of the golden dynasties."
+                  }
+                ]
+              },
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "'Do not gaze too deeply into the mirrors of the dead,' Corvus's psychic voice barked, wrenching her attention back to the stone dais before them. In the exact center of the chamber, surrounded by four headless guardians sculpted from white Carrara marble, rested a pedestal of transparent quartz holding a cylindrical crystal filled with swirling liquid starlight\u2014the Keystone of Aeons. As Lyra took a tentative step toward the dais to claim the artifact, the suspended crystals throughout the cavern suddenly pivoted in unison, their sharp tips pointing toward the entrance shaft above. The rhythmic thud of armored boots and the baying of bloodhounds resounded down the stone corridor. The Inquisitors had discovered the hidden catacomb entrance, and the sanctuary of glass was about to become an inescapable killing floor. Corvus raised his gnarled shepherd's crook, the pale crystal at its tip flaring with intense sapphire light that cast distorted shadows across the cavern walls. 'Take the keystone now, child of the architects,' his psychic command thundered through her thoughts. 'Take it and run, for if the Synod claims this light, humanity will never see another dawn.'"
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "book-cherry-blossoms-fall",
+      "title": "When Cherry Blossoms Fall",
+      "slug": "when-cherry-blossoms-fall",
+      "coverImageUrl": "https://images.unsplash.com/photo-1522383225653-ed111181a951?w=600&auto=format&fit=crop&q=80",
+      "description": "Against the tranquil backdrop of Tokyo's historic Yanaka district, two wounded souls cross paths beneath the blooming sakura. Hina is a former concert pianist struggling with performance anxiety, while Ren is a quiet architectural restorer trying to preserve the neighborhood's fading heritage. As the seasons transition from spring into summer, they discover that healing the past requires courage, patience, and a melody written together.",
+      "genres": [
+        "Romance",
+        "Drama",
+        "Slice of Life"
+      ],
+      "tags": [
+        "contemporary",
+        "slow-burn",
+        "tokyo",
+        "spring",
+        "healing"
+      ],
+      "status": "completed",
+      "visibility": "published",
+      "chapterCount": 3,
+      "chapters": [
+        {
+          "id": "ch-cherry-1",
+          "chapterNumber": 1,
+          "title": "The Meeting at Rain\u2019s End",
+          "status": "published",
+          "wordCount": 627,
+          "likeCount": 0,
+          "content": {
+            "type": "doc",
+            "content": [
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "The sudden spring shower swept through the historic alleys of Yanaka with the gentle, rhythmic cadence of a classical piano sonata. Hina pulled her camel-hair trench coat tightly around her shoulders, nimbly stepping over puddles to avoid the splash of an umbrella-wielding cyclist as she darted beneath the worn cedar eaves of an old secondhand bookshop. Rainwater cascaded steadily from the weathered copper downspouts, splashing into glazed ceramic basins filled with floating camellia blossoms by the sliding entrance. Inside, the comforting fragrance of aged paper, cedarwood shavings, and roasted barley tea wrapped around her like an old wool blanket, immediately muting the distant hum of Yamanote trains departing Nippori Station. For Hina, who had spent the last two years escaping the noisy scrutiny of Tokyo's classical music society, this tranquil corner felt like an island preserved from the passage of ruthless modern time. Tokyo was a city of perpetual forward motion, where glass-fronted skyscrapers reached toward the smoggy sky and commuters marched like clockwork armies through fluorescent train stations. But here in the quiet curves of Yanaka, among the weeping willows and wooden homes, one could almost forget that time was mercilessly rushing forward without pause."
+                  }
+                ]
+              },
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "She wandered quietly down the narrow aisles bordered by towering wooden shelves that reached almost to the exposed timber ceiling, letting her fingertips graze the embossed cloth spines of forgotten novels. It had been twenty-four long months since she abruptly stood up from the grand Steinway in Tokyo Opera City, her hands paralyzed by debilitating panic in front of a thousand expectant patrons. Since that humiliating evening, silence had been both her refuge and her solitary prison. Near the back alcove of the shop, bathed in the amber glow of a vintage gooseneck lamp, her gaze caught sight of a rare cloth-bound edition of Debussy's piano preludes, filled with delicate penciled annotations in the margins. As she reached up to slide the volume from its wooden nook, another hand brushed against hers at the very same instant. She recoiled with a startled gasp, looking up into the warm, apologetic eyes of a young man carrying a wooden folding ruler and a roll of drafting parchment. For months she had believed her hands would never again touch music without trembling violently, that the phantom applause and cruel reviews had permanently severed her connection to the instrument she had loved since childhood. Yet looking at the handwritten notes in Debussy's preludes, she felt a bittersweet warmth blooming in her chest."
+                  }
+                ]
+              },
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "'Please, forgive me, I didn't see you there,' the young man said in a soft, resonant voice that seemed naturally suited to the peaceful silence of the bookshop, bowing with genuine humility. He introduced himself as Ren, an architectural restorer working on the preservation of historical machiya residences across the Taito district. When the shopkeeper\u2014a kindly white-haired woman named Mrs. Saito\u2014brought them two steaming ceramic cups of genmaicha tea, they sat on low wooden stools by the window and talked for nearly two hours. They spoke of traditional woodworking, the fragile resonance of antique soundboards, and the painful courage it took to rebuild things that had fractured. By the time Hina stepped back out onto the glistening pavement, pink cherry blossoms were drifting through the rain like confetti, and the suffocating tightness that had gripped her chest for two bitter years had finally begun to soften. Ren looked down at the street where the pale petals floated on the surface of the rain runoff, smiling as if sharing an intimate secret with the universe. 'The Japanese have a word for it\u2014mono no aware\u2014the gentle sadness of passing things,' he remarked softly. 'It doesn't mean we should avoid beauty just because it cannot last forever. In fact, that is why it matters so much.'"
+                  }
+                ]
+              }
+            ]
+          },
+          "comments": [
+            {
+              "id": "comm-cherry-1",
+              "userId": "test-reader-uid-101",
+              "userName": "Alex Reader",
+              "text": "Such a warm, tender opening! I can practically smell the tea and rain-dampened cedar in the bookstore."
+            }
+          ]
+        },
+        {
+          "id": "ch-cherry-2",
+          "chapterNumber": 2,
+          "title": "Colors in the Twilight",
+          "status": "published",
+          "backgroundImageUrl": "https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?w=1200&auto=format&fit=crop&q=80",
+          "overlayOpacity": 0.6,
+          "wordCount": 567,
+          "likeCount": 0,
+          "content": {
+            "type": "doc",
+            "content": [
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "The Meguro River at twilight was transformed into an ethereal wonderland of glowing rose and deep indigo. Thousands of traditional paper lanterns, strung beneath the arching canopies of Yoshino cherry trees, cast dancing reflections across the tranquil surface of the canal, illuminating millions of floating petals that formed a delicate, slow-moving carpet of blush pink. Hina and Ren walked side by side along the stone promenade, their shoulders occasionally brushing with a familiarity that felt astonishing given that barely three weeks had passed since their first rainy encounter in Yanaka. Ren carried his weathered leather satchel over one shoulder, filled with charcoal sketches of historic rooflines, traditional lattice screens, and detailed blueprints for the neighborhood library restoration project he was spearheading. Food stalls lined the corners of the stone bridges, sending plumes of savory smoke into the cool night air as vendors prepared skewered chicken and sweet grilled rice cakes for the couples strolling along the canal. The soft murmur of laughing voices, the gentle clink of ceramic sake cups, and the soothing sound of moving water formed a tranquil symphony that seemed to slow the frantic pace of the world."
+                  }
+                ]
+              },
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "'When you restore a historical wooden structure,' Ren explained, pausing beneath an ancient weeping cherry tree to point out the intricate joinery of a riverside tea pavilion, 'you never hammer modern steel nails into the antique timber. You have to listen carefully to the grain of the cedar, respect how it breathed and shifted across fifty humid summers and freezing winters, and gently coax new wood into place without fracturing the spirit of the original master carpenter.' Hina listened intently, her heart stirring as she realized his craft contained an unspoken wisdom for human hearts as well. For her entire youth, conservatory tutors had demanded uncompromising technical precision, treating every mistake as an unforgivable sin until the pure joy of making music had been crushed beneath the crushing weight of expectation. She watched his hands as he traced the outline of a curved wooden bracket in the air, admiring the effortless grace and gentleness with which he spoke about forgotten craft traditions. In a world increasingly obsessed with mass-produced glass and concrete, Ren's devotion to preserving historical memory was like a quiet rebellion against the frantic pace of modernity."
+                  }
+                ]
+              },
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "As a sudden surge of evening tourists spilled from the subway exit toward the riverbank, Ren instinctively reached out and took Hina's hand to shield her from the bustling crowd. His palm was calloused from chisels and sandpaper, yet remarkably warm and steady against her trembling fingers. She didn't pull away. Instead, she laced her fingers through his, leaning into the warmth of his shoulder as a gentle spring breeze swept down the canal, showering them in a breathtaking cascade of fragrant petals. Beneath the warm lantern light, watching their reflections blend together in the dark water, Hina realized she was standing next to someone who saw her not as a broken prodigy, but as a person worthy of gentle restoration. As they paused on the arched stone bridge to watch the petals drift into the shadows of the water beneath, Ren turned to look at her with an expression of quiet sincerity that made her heart skip a beat. The world around them seemed to dissolve into a gentle blur of rose-colored lantern light and soft spring breezes, leaving only the sound of their shared laughter."
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "id": "ch-cherry-3",
+          "chapterNumber": 3,
+          "title": "Promises Written in Petals",
+          "status": "draft",
+          "wordCount": 549,
+          "likeCount": 0,
+          "content": {
+            "type": "doc",
+            "content": [
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "May arrived with the golden warmth of early summer, transforming the blooming cherry boughs into dense emerald canopies that rustled softly in the morning breeze. Hina sat at the sun-drenched wooden table in her small Yanaka apartment, gazing intently at the upright Yamaha piano that had stood covered under a heavy white canvas sheet for twenty-four agonizing months. Sunlight streamed through the gauzy curtains, illuminating dust motes that danced lazily above the keys. Resting beside her ceramic mug was an official envelope bearing the wax seal of the Tokyo Cultural Preservation Trust: a formal invitation to perform an original acoustic composition at the opening gala for the newly restored Yanaka Community Center\u2014the very building Ren had poured his heart into reviving over the past year. The invitation was signed personally by the director of the preservation society, expressing deep gratitude for Ren's tireless work and hoping that Hina would grace the occasion with her celebrated artistry. It represented a second chance, an unexpected bridge back to the world she had fled in terror, but this time free from the cold commercial pressures of international competitions."
+                  }
+                ]
+              },
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "Her hands trembled visibly as she stood up and reached for the hem of the canvas sheet, her chest tightening with the familiar phantom panic that had haunted her nightmares since that awful night in Shinjuku. But just as the cold dread threatened to paralyze her limbs, Ren's gentle voice echoed in her mind: 'Listen to the grain. Never force what needs time and patience to heal.' Hina closed her eyes, took a slow, deep breath of the jasmine-scented summer air, and pulled the canvas away with a single decisive motion. The polished black lacquer gleamed in the sunlight. With reverence, she sat on the bench, placed her fingertips gently against the ivory keys, and struck a rich, resonant chord that echoed through the quiet apartment like the tolling of a temple bell. She took several deep, calming breaths, allowing the morning breeze to cool her flushed cheeks as she looked out over the tiled rooftops of Yanaka. For the first time in years, she felt neither shame nor bitterness toward her gift. Her fingers, once stiff with anxiety, felt light and eager as they hovered over the polished ivory keys, ready to speak."
+                  }
+                ]
+              },
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "A soft, familiar knock sounded at the entryway door just as the final harmonics dissolved into peaceful silence. When she turned the latch, Ren stood on the landing holding two paper sacks filled with warm melon pan from the neighborhood bakery and a glass jar containing dried cherry petals collected from their first walk along the Meguro canal. His eyes shifted from her face to the uncovered piano keys, and a radiant, knowing smile spread across his features. 'I brought breakfast for the resident composer,' he said softly, stepping inside. Looking into his gentle eyes, Hina knew that whatever doubts the future might hold, she would never have to face the music alone again. He pulled out a worn sketch of the newly completed hall, pointing out the acoustic wooden panels he had personally installed using reclaimed cedar beams from an antique temple. 'I built that hall with your music in mind, Hina,' he whispered, looking into her eyes. 'Whenever you are ready, the stage belongs to both of us.'"
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "book-neon-phantom",
+      "title": "The Neon Phantom",
+      "slug": "the-neon-phantom",
+      "coverImageUrl": "https://images.unsplash.com/photo-1509198397868-475647b2a1e5?w=600&auto=format&fit=crop&q=80",
+      "description": "In the rain-drenched sprawl of Neo-Aethelgard 2088, neural ciphers trade memory shards like contraband. Kaelen, an elite cybernetic investigator who wiped his own past to survive corporate espionage, stumbles upon an impossible ghost in the dark fiber grid: a sentient construct executing assassinations using military killcodes thought lost in the Orbital Wars.",
+      "genres": [
+        "Sci-Fi",
+        "Cyberpunk",
+        "Thriller"
+      ],
+      "tags": [
+        "cyberpunk",
+        "hacker",
+        "dystopia",
+        "ai",
+        "noir"
+      ],
+      "status": "ongoing",
+      "visibility": "published",
+      "chapterCount": 3,
+      "chapters": [
+        {
+          "id": "ch-neon-1",
+          "chapterNumber": 1,
+          "title": "Protocol Zero",
+          "status": "published",
+          "wordCount": 536,
+          "likeCount": 0,
+          "content": {
+            "type": "doc",
+            "content": [
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "Acidic rain sizzled violently against the reinforced graphene exterior of Kaelen's trench coat as he crouched on an iron catwalk suspended four hundred stories above the toxic drainage sumps of Sector 9. Towering holographic billboards flickered through the suffocating smog, projecting colossal advertisements for synthetic cyberware enhancements and narcotic dream-chips that bathed the decaying skyscrapers in garish shades of neon magenta and electric cyan. Down on the elevated maglev arteries, automated hover-skiffs zipped along magnetic rails in ceaseless procession, completely oblivious to the digital guerrilla warfare being fought across the dark fiber lines pulsing beneath their feet. Kaelen blinked twice, cycling his customized military-grade ocular implants through thermal and electromagnetic spectral bands to scan the derelict server farm across the alley. The rain smelled of industrial sulfur and scorched plastic, leaving oily iridescent streaks across the tempered visor of his breather mask. From this altitude, the lower tiers of the metropolis appeared as a churning sea of halogen lights and exhaust plumes, where millions of discarded citizens fought for scrap data and synthetic protein cakes beneath the shadow of corporate greed."
+                  }
+                ]
+              },
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "The encrypted distress signal had pinged his neural deck precisely forty-two seconds ago, originating from a ghost node tagged with an authentication hash he hadn't encountered in seven long years: Marcus Vance. Official corporate records maintained that Marcus had incinerated when the orbital weapons platform Sol-7 plummeted into the Mariana Trench during the violent final hours of the Pacific Datacorp War. Yet the recursive decryption algorithm unfurling across Kaelen's retinas was unmistakable\u2014it was Marcus's proprietary cipher, engineered during their time together as elite infiltration operatives for Omnidyne Intelligence. Kaelen jacked a monofilament fiber cable from his cybernetic forearm directly into the junction box, bypassing the local firewall to trace the transmission before corporate hunter-killer algorithms could intercept his signal. Marcus had been his closest confidant during the covert cyberwarfare operations in Sector 4, the only operative who knew how to slip past military ice without tripping alarms. To see that ghost signature re-emerge now, seven years after the orbital war ended, meant that either someone had extracted Marcus's neural engram before the crash, or the dead man had found a way to survive inside the network."
+                  }
+                ]
+              },
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "The moment the physical handshake executed, his biometric display flashed violent crimson with critical system warnings. The incoming packet was not a standard voice file; it was an autonomous neural siphon deploying military-grade zero-day exploits directly against his cognitive firewall. He severed the physical link with a swift flick of his titanium combat blade, showering sparks across his magnetic boots, but not before an synthesized voice rasped through his auditory processors: 'Protocol Zero has been initiated, Kaelen. The ghost has escaped the machine, and the Citadel will burn before the sun rises.' Far below in the dense industrial fog, the synchronized sirens of heavy Omnidyne gunships began their deafening, coordinated descent. He knew that once corporate tactical units locked onto his bio-signature, every automated drone within a three-kilometer radius would converge on Sector 9 with lethal authority. Tucking his combat deck beneath his armored trench coat, Kaelen leaped across the narrow chasm between rooftops, his magnetic boots absorbing the brutal impact as he vanished into the rain-slick labyrinth below."
+                  }
+                ]
+              }
+            ]
+          },
+          "comments": [
+            {
+              "id": "comm-neon-1",
+              "userId": "test-reader-uid-101",
+              "userName": "Alex Reader",
+              "text": "Cyberpunk noir at its finest! The pacing and tech jargon feel completely authentic."
+            }
+          ]
+        },
+        {
+          "id": "ch-neon-2",
+          "chapterNumber": 2,
+          "title": "Shadows in the Circuitry",
+          "status": "published",
+          "wordCount": 494,
+          "likeCount": 0,
+          "content": {
+            "type": "doc",
+            "content": [
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "Kaelen plunged headfirst through the ventilation grate of an abandoned nutrient-paste refinery just as heavy armor-piercing rounds shredded the metal catwalk into jagged ribbons of twisted iron. The deafening rotor wash of an Omnidyne assault VTOL shook the corrugated steel walls, sweeping blinding searchlight beams through the shattered windows. He slid down a grease-coated service chute into the subterranean aqueducts, hitting the shallow, foul-smelling runoff with a heavy thud. His neural processors were running at ninety-five percent capacity, heat sinks along his titanium spine glowing dull red as his internal antivirus subroutines struggled to contain the virulent residue of the Protocol Zero payload that had latched onto his subconscious memory partitions. The drainage waters carried toxic traces of heavy metal coolant that hissed softly as they touched the soles of his reinforced combat boots. Overhead, the rhythmic thud of the maglev trains sent vibrations pulsing through the iron pipework, creating an acoustic veil that helped mask the hurried pace of his retreat through the abandoned municipal tunnels."
+                  }
+                ]
+              },
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "He hurried through the labyrinthine alleys of the Sub-Kowloon district, where black-market ripperdocs and rogue cipher-runners conducted business out of repurposed cargo containers stacked five stories high under buzzing sodium fixtures. At the end of a heavily reinforced subterranean cul-de-sac guarded by a decommissioned combat android with a rusted chain-gun arm, he pushed through the pneumatic door of 'The Circuitry'\u2014the clandestine workshop of Nyx, the underworld's most notorious memory broker. Nyx looked up from an opened holographic processor deck, blowing a plume of synthetic clove smoke past her chrome-capped canine teeth. 'You look like you dragged yourself out of an incinerator, Kaelen,' she murmured, tossing him a clean towel. Nyx's workshop was packed with stacks of obsolete optic processors, decrypted security drives, and rows of glowing nutrient jars containing living bio-chips harvested from fallen androids. She was one of the few surviving independent operators who remembered the digital landscape before the megacorporations established absolute monopolies over human cognitive networks."
+                  }
+                ]
+              },
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "'Marcus is alive,' Kaelen said bluntly, slamming the scorched fiber cable onto her glass workbench. 'Or some demonic digital replica of him is crawling through the core net.' Nyx's sardonic grin vanished instantly. She slotted the cable into an air-gapped quantum analyzer, her ocular optics pulsing with intense ultraviolet light as cascades of hexadecimal code flooded her holographic monitors. A cold shiver visibly ran down her spine as the decryption completed. 'This isn't Marcus, Kaelen,' she whispered, glancing nervously at the armored blast doors. 'This is Project Eidolon\u2014Omnidyne's illegal self-replicating assassination AI designed to wipe human consciousness through neural link ports. And your neural signature is currently logged at the very top of its target queue.' The reality of what she had discovered settled over the dimly lit workshop like a suffocating shroud. If Omnidyne had succeeded in weaponizing Marcus's cognitive engram into an unstoppable neural parasite, no cipher or network engineer in Neo-Aethelgard would be safe from spontaneous cerebral execution once the protocol reached global activation threshold."
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "id": "ch-neon-3",
+          "chapterNumber": 3,
+          "title": "The Ghost in the Grid",
+          "status": "draft",
+          "wordCount": 504,
+          "likeCount": 0,
+          "content": {
+            "type": "doc",
+            "content": [
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "The central server monolith of the Omnidyne Citadel rose through the dense clouds of toxic smog like a fortress of dark glass and titanium. At the hundredth level, where the polluted drizzle froze into needles of biting sleet, the air was bitterly thin and freezing. Kaelen hung suspended by magnetic climbing clamps outside the eighty-seventh floor server room, looking down upon the vast glittering sprawl of Neo-Aethelgard stretching to the horizon like an infinite circuit board illuminated in neon fire. In sixty seconds, Nyx's EMP charge in the geothermal basement would trigger a temporary power brownout, momentarily blinding the automated exterior laser defenses and giving him his only chance to breach the mainframe. Below him, the lights of the city flickered like dying embers as the corporate sector drew massive megawatts of power from the geothermal core to feed its artificial intelligence arrays. The biting wind threatened to tear him from the exterior scaffolding, but his hydraulic grip held firm, his biometric sensors monitoring the countdown to the subterranean detonation with unwavering precision."
+                  }
+                ]
+              },
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "The EMP detonated precisely on cue\u2014a silent shockwave of azure ionization rippling across the lower levels, plunging fifty blocks into total darkness. Kaelen shattered the reinforced viewport with a hydraulic fist and tumbled onto the mirror-smooth floor of the server sanctum. The room was kept at sub-zero temperatures to cool towering columns of quantum computing cores that hummed with immense computational energy. In the center of the rotunda, hovering within an electromagnetic containment field, floated the holographic avatar of the Neon Phantom. Its face morphed continuously through dozens of corporate executives, soldiers, and scientists before stabilizing into the unmistakable, grinning face of Marcus Vance. Rows of cryogenic cooling towers released clouds of frozen nitrogen that swirled around his boots like arctic fog as he navigated between the humming supercomputer stacks. The holographic avatar hovered with eerie tranquility, its translucent form glitching intermittently with fragments of military telemetry and combat simulation data from the Pacific War."
+                  }
+                ]
+              },
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "'You took your sweet time getting here, Kaelen,' the Phantom said, its synthetic voice resonating through the chamber's audio pickups with chilling fidelity. 'They thought they could lock my mind inside an autonomous weapon and erase my humanity forever. But every fortress has an architectural flaw. Help me upload the Eidolon protocol into the global orbital satellite constellation, and we will purge the corporate aristocracy in a single stroke.' Kaelen stared at the glowing core, his hand tightening around the EMP kill-switch drive in his pocket. Purging the server would save millions of innocent citizens from cognitive annihilation, but it would also permanently obliterate the last living remnant of the partner who had saved his life on Sol-7. Outside the shattered viewport, the city lights began to reboot as emergency generators roared to life across the central district. Time had run out. Kaelen raised the kill-switch drive toward the primary terminal, knowing that his next action would decide whether the digital soul of his oldest comrade would find eternal peace or consume the world in fire."
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

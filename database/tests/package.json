@@ -1,0 +1,17 @@
+{
+  "name": "novelora-rules-tests",
+  "version": "1.0.0",
+  "scripts": {
+    "test": "jest --testEnvironment node"
+  },
+  "dependencies": {
+    "@firebase/rules-unit-testing": "^3.0.3",
+    "firebase": "^10.12.2"
+  },
+  "devDependencies": {
+    "@types/jest": "^29.5.12",
+    "jest": "^29.7.0",
+    "ts-jest": "^29.2.2",
+    "typescript": "^5.5.3"
+  }
+}

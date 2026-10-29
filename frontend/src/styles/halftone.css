@@ -1,0 +1,11 @@
+.halftone {
+  background-image: radial-gradient(circle, #8EC9F5 1px, transparent 1px);
+  background-size: 20px 20px;
+  opacity: 0.08;
+}
+
+.halftone-dense {
+  background-image: radial-gradient(circle, #8EC9F5 1.5px, transparent 1.5px);
+  background-size: 14px 14px;
+  opacity: 0.08;
+}

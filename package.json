@@ -1,0 +1,24 @@
+{
+  "name": "novelora",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Novelora – Personal novel publishing platform",
+  "scripts": {
+    "dev": "concurrently \"npm run emulators\" \"npm run frontend:dev\"",
+    "frontend:dev": "cd frontend && npm run dev",
+    "emulators": "firebase emulators:start --only auth,firestore,functions,storage",
+    "build": "cd frontend && npm run build",
+    "deploy": "npm run build && firebase deploy",
+    "deploy:hosting": "npm run build && firebase deploy --only hosting",
+    "deploy:functions": "cd backend/functions && npm run build && firebase deploy --only functions",
+    "deploy:rules": "firebase deploy --only firestore:rules,storage:rules,firestore:indexes",
+    "seed": "cd database && npx ts-node seeds/seed.ts",
+    "seed:live": "cd database && npx ts-node seeds/seedLive.ts",
+    "set-admin": "cd backend && npx ts-node scripts/setAdmin.ts"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2",
+    "typescript": "^5.3.3"
+  }
+}
+

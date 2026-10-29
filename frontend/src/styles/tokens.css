@@ -1,0 +1,34 @@
+:root {
+  /* ── Bordeaux · Hunter · Sage · Bone · Cedar ── */
+  --bordeaux : #4A1A23;
+  --hunter   : #233126;
+  --sage     : #6A7657;
+  --bone     : #D8D0C2;
+  --cedar    : #8C603E;
+  --ink      : #1A1A1A;
+  --parchment: #EDE8DF;
+  --sand     : #C4B9A8;
+
+  /* Semantic tokens */
+  --color-paper    : #D8D0C2;
+  --color-white    : #D8D0C2;
+  --color-frost    : #C4B9A8;
+  --color-ink      : #1A1A1A;
+  --color-muted    : #6B6560;
+
+  --color-aurora-blue    : #6A7657;
+  --color-aurora-mint    : #6A7657;
+  --color-aurora-lavender: #8C603E;
+  --color-deep-sky       : #233126;
+  --color-soft-coral     : #4A1A23;
+  --color-slate-grey     : #6B6560;
+
+  --shadow-hard   : 6px 6px 0 #1A1A1A;
+  --shadow-hard-sm: 4px 4px 0 #1A1A1A;
+  --shadow-hard-lg: 8px 8px 0 #1A1A1A;
+  --border        : 3px solid #1A1A1A;
+
+  --font-heading: 'Bangers', cursive;
+  --font-body   : 'Space Grotesk', sans-serif;
+  --font-reading: 'Literata', serif;
+}

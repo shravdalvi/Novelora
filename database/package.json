@@ -1,0 +1,19 @@
+{
+  "name": "novelora-database",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Novelora Database rules, seeds, and tests",
+  "scripts": {
+    "seed": "ts-node seeds/seed.ts",
+    "seed:live": "ts-node seeds/seedLive.ts",
+    "test": "cd tests && npm test"
+  },
+  "dependencies": {
+    "firebase-admin": "^12.2.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.9",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.5.3"
+  }
+}

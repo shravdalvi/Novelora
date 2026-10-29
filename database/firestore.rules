@@ -1,0 +1,95 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ── Helper functions ──────────────────────────────────────────
+    function isAdmin() {
+      return request.auth != null && (
+        request.auth.token.admin == true ||
+        request.auth.token.email == 'shravanidalvi70@gmail.com' ||
+        request.auth.token.email == 'shravanidalvi2606@gmail.com'
+      );
+    }
+    
+    function isSignedIn() {
+      return request.auth != null;
+    }
+    
+    function isOwner(uid) {
+      return isSignedIn() && request.auth.uid == uid;
+    }
+    
+    function validEmail(email) {
+      return email is string && email.matches('.*@.*\\..*');
+    }
+    
+    // ── Users ─────────────────────────────────────────────────────
+    match /users/{uid} {
+      // Users can read and update ONLY their own profile
+      // They cannot change the 'role' field
+      allow read: if isOwner(uid) || isAdmin();
+      allow create: if (isOwner(uid) && request.resource.data.role == 'reader') || isAdmin();
+      allow update: if isOwner(uid) 
+        && !('role' in request.resource.data.diff(resource.data).affectedKeys());
+      allow delete: if isAdmin();
+      
+      // Bookmarks - user reads/writes their own only
+      match /bookmarks/{bookId} {
+        allow read, write: if isOwner(uid);
+      }
+      
+      // Reading progress - user reads/writes their own only
+      match /progress/{bookId} {
+        allow read, write: if isOwner(uid);
+      }
+      
+      // Likes - user reads/writes their own only
+      match /likes/{chapterId} {
+        allow read, write: if isOwner(uid);
+      }
+    }
+    
+    // ── Books ─────────────────────────────────────────────────────
+    match /books/{bookId} {
+      // Anyone can read published books; admin reads all (including drafts)
+      allow read: if resource.data.visibility == 'published' || isAdmin();
+      // Only admin can write
+      allow write: if isAdmin();
+      
+      // ── Chapters ──────────────────────────────────────────────
+      match /chapters/{chapterId} {
+        // Published chapter 1: readable by anyone (guest friendly)
+        // Published chapter 2+: readable only if signed in
+        // Drafts: admin only
+        allow read: if isAdmin() 
+          || (resource.data.status == 'published' 
+              && (resource.data.chapterNumber == 1 || isSignedIn()));
+        allow write: if isAdmin();
+        
+        // ── Comments ────────────────────────────────────────────
+        match /comments/{commentId} {
+          // Signed-in users can read comments
+          allow read: if isSignedIn();
+          // Signed-in users create their own comments
+          allow create: if isSignedIn() 
+            && request.resource.data.userId == request.auth.uid
+            && request.resource.data.text is string
+            && request.resource.data.text.size() >= 1
+            && request.resource.data.text.size() <= 1000;
+          // Users can delete their own; admin can delete any
+          allow delete: if isAdmin() 
+            || (isSignedIn() && resource.data.userId == request.auth.uid);
+          allow update: if false; // Comments are immutable
+        }
+      }
+    }
+    
+    // ── Subscribers ───────────────────────────────────────────────
+    match /subscribers/{id} {
+      // Anyone can subscribe (create); only admin can read
+      allow create: if request.resource.data.email is string
+        && validEmail(request.resource.data.email);
+      allow read, update, delete: if isAdmin();
+    }
+  }
+}

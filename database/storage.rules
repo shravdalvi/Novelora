@@ -1,0 +1,51 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    
+    function isAdmin() {
+      return request.auth != null && (
+        request.auth.token.admin == true ||
+        request.auth.token.email == 'shravanidalvi70@gmail.com' ||
+        request.auth.token.email == 'shravanidalvi2606@gmail.com'
+      );
+    }
+    
+    function isImage() {
+      return request.resource.contentType.matches('image/.*');
+    }
+    
+    function isUnderSizeLimit() {
+      return request.resource.size <= 10 * 1024 * 1024; // 10MB
+    }
+    
+    // Book covers - public read, signed-in author/admin write
+    match /covers/{fileName} {
+      allow read: if true;
+      allow write: if (isAdmin() || request.auth != null) && isImage() && isUnderSizeLimit();
+    }
+    
+    // Chapter inline images - public read, signed-in author/admin write
+    match /chapter-images/{fileName} {
+      allow read: if true;
+      allow write: if (isAdmin() || request.auth != null) && isImage() && isUnderSizeLimit();
+    }
+    
+    // Chapter background images - public read, signed-in author/admin write
+    match /backgrounds/{fileName} {
+      allow read: if true;
+      allow write: if (isAdmin() || request.auth != null) && isImage() && isUnderSizeLimit();
+    }
+    
+    // User avatars - public read, owner write
+    match /avatars/{fileName} {
+      allow read: if true;
+      allow write: if request.auth != null && isImage() && isUnderSizeLimit();
+    }
+    
+    // Catch-all
+    match /{allPaths=**} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+  }
+}

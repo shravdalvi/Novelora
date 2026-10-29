@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <rect x="4" y="4" width="56" height="56" rx="8" fill="#8EC9F5" stroke="#0B1D33" stroke-width="4"/>
+  <rect x="8" y="8" width="56" height="56" rx="8" fill="#0B1D33"/>
+  <rect x="4" y="4" width="56" height="56" rx="8" fill="#8EC9F5" stroke="#0B1D33" stroke-width="4"/>
+  <text x="32" y="44" font-family="'Bangers', cursive, sans-serif" font-size="34" font-weight="bold" fill="#0B1D33" text-anchor="middle">N</text>
+</svg>

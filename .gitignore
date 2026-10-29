@@ -1,0 +1,97 @@
+# ==============================================================================
+# NOVELORA - Comprehensive .gitignore
+# Protects secrets, credentials, build outputs, and local development files
+# ==============================================================================
+
+# ── Dependencies ─────────────────────────────────────────────────────────────
+node_modules/
+*/node_modules/
+**/node_modules/
+.pnp
+.pnp.js
+
+# ── Production & Build Outputs ───────────────────────────────────────────────
+dist/
+*/dist/
+**/dist/
+build/
+*/build/
+**/build/
+out/
+backend/functions/lib/
+*.tsbuildinfo
+.vite/
+
+# ── Environment & Secrets (NEVER COMMIT SENSITIVE KEYS) ──────────────────────
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+**/.env
+**/.env.*
+!**/.env.example
+
+# Service account credentials & private keys
+*serviceAccount*.json
+*service-account*.json
+!*serviceAccount*.example.json
+!*service-account*.example.json
+credentials.json
+client_secret*.json
+*.pem
+*.key
+*.cert
+
+# ── Firebase CLI & Emulators ─────────────────────────────────────────────────
+.firebase/
+firebase-debug.log*
+firestore-debug.log*
+ui-debug.log*
+pubsub-debug.log*
+database-debug.log*
+storage.rules.local
+firestore.rules.local
+
+# ── Logs & Debugging ─────────────────────────────────────────────────────────
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# ── Test & Code Coverage ─────────────────────────────────────────────────────
+coverage/
+*.lcov
+.nyc_output/
+
+# ── Cache & Temporary Files ──────────────────────────────────────────────────
+.cache/
+.parcel-cache/
+.eslintcache
+tmp/
+temp/
+
+# ── IDE & Editor Settings ────────────────────────────────────────────────────
+.idea/
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+*.sublime-project
+*.sublime-workspace
+
+# ── Operating System Files ───────────────────────────────────────────────────
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
