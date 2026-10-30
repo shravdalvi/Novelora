@@ -44,7 +44,7 @@ export const CommentSection: React.FC<CommentSectionProps> = ({
 
     try {
       setSubmitting(true)
-      await addComment(bookId, chapterId, newComment.trim())
+      await addComment(bookId, chapterId, newComment.trim(), user.name, user.uid)
       setNewComment('')
       toast.success('Comment posted!')
     } catch (err: any) {

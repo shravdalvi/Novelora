@@ -1,18 +1,15 @@
 import React, { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { collection, getDocs, doc, getDoc, deleteDoc } from 'firebase/firestore'
-import { db } from '../services/firebase'
 import { PageWrapper } from '../components/layout/PageWrapper'
 import { Button } from '../components/ui/Button'
 import { Skeleton } from '../components/ui/Skeleton'
 import { toast } from '../components/ui/Toast'
 import { useAuth } from '../hooks/useAuth'
-import type { Book, Bookmark, ReadingProgress } from '../types'
-
-interface BookmarkWithBook extends Bookmark {
-  book: Book
-  progress?: ReadingProgress | null
-}
+import {
+  subscribeToUserBookshelf,
+  removeBookmark,
+  BookmarkWithBook,
+} from '../services/bookmarkService'
 
 export const Bookshelf: React.FC = () => {
   const { user } = useAuth()
@@ -20,57 +17,26 @@ export const Bookshelf: React.FC = () => {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    async function loadBookshelf() {
-      if (!user) return
-      setLoading(true)
-
-      try {
-        const bookmarksRef = collection(db, 'users', user.uid, 'bookmarks')
-        const snapshot = await getDocs(bookmarksRef)
-
-        const loaded: BookmarkWithBook[] = []
-
-        for (const docSnap of snapshot.docs) {
-          const bookId = docSnap.id
-          const bookRef = doc(db, 'books', bookId)
-          const bookSnap = await getDoc(bookRef)
-
-          if (bookSnap.exists()) {
-            const bookData = { id: bookSnap.id, ...bookSnap.data() } as Book
-
-            // Fetch progress for this book
-            const progressRef = doc(db, 'users', user.uid, 'progress', bookId)
-            const progressSnap = await getDoc(progressRef)
-            const progressData = progressSnap.exists()
-              ? (progressSnap.data() as ReadingProgress)
-              : null
-
-            loaded.push({
-              bookId,
-              createdAt: docSnap.data().createdAt,
-              book: bookData,
-              progress: progressData,
-            })
-          }
-        }
-
-        setBookmarks(loaded)
-      } catch (err) {
-        console.error('Error fetching bookshelf:', err)
-      } finally {
-        setLoading(false)
-      }
+    if (!user) {
+      setBookmarks([])
+      setLoading(false)
+      return
     }
 
-    loadBookshelf()
+    setLoading(true)
+    const unsubscribe = subscribeToUserBookshelf(user.uid, (items) => {
+      setBookmarks(items)
+      setLoading(false)
+    })
+
+    return () => unsubscribe()
   }, [user])
 
   const handleRemoveBookmark = async (bookId: string) => {
     if (!user) return
     try {
-      const ref = doc(db, 'users', user.uid, 'bookmarks', bookId)
-      await deleteDoc(ref)
       setBookmarks((prev) => prev.filter((b) => b.bookId !== bookId))
+      await removeBookmark(user.uid, bookId)
       toast.success('Removed from bookshelf')
     } catch {
       toast.error('Failed to remove bookmark')

@@ -5,11 +5,13 @@ import { ChapterList } from '../components/book/ChapterList'
 import { Badge } from '../components/ui/Badge'
 import { Button } from '../components/ui/Button'
 import { toast } from '../components/ui/Toast'
-import { getBookBySlug } from '../../src/services/bookService'
-import { getPublishedChapters } from '../../src/services/chapterService'
+import { getBookBySlug } from '../services/bookService'
+import { getPublishedChapters } from '../services/chapterService'
+import { getLocalChapters } from '../services/localBooksService'
+import { subscribeToBookmarkedStatus, toggleBookmark } from '../services/bookmarkService'
 import { useAuth } from '../hooks/useAuth'
 import { useReadingProgress } from '../hooks/useReadingProgress'
-import { doc, getDoc, setDoc, deleteDoc, serverTimestamp, collection, query, where, orderBy, onSnapshot } from 'firebase/firestore'
+import { doc, collection, query, where, orderBy, onSnapshot } from 'firebase/firestore'
 import { db } from '../services/firebase'
 import type { Book, Chapter } from '../types'
 
@@ -26,6 +28,8 @@ export const BookDetail: React.FC = () => {
 
   useEffect(() => {
     let unsubChapters: (() => void) | undefined
+    let unsubBook: (() => void) | undefined
+    let unsubBookmark: (() => void) | undefined
 
     async function loadBookData() {
       if (!slug) return
@@ -35,36 +39,55 @@ export const BookDetail: React.FC = () => {
         if (foundBook) {
           setBook(foundBook)
 
-          // Real-time listener for published chapters
+          // 1. Real-time listener for the book doc itself
+          try {
+            unsubBook = onSnapshot(doc(db, 'books', foundBook.id), (snap) => {
+              if (snap.exists()) {
+                setBook({ id: snap.id, ...snap.data() } as Book)
+              }
+            })
+          } catch {}
+
+          // 2. Real-time listener for published chapters
           const chaptersRef = collection(db, 'books', foundBook.id, 'chapters')
           const q = query(
             chaptersRef,
             where('status', '==', 'published'),
             orderBy('chapterNumber', 'asc')
           )
+
+          const mergeWithLocal = (cloudList: Chapter[]) => {
+            const cloudIds = new Set(cloudList.map((c) => c.id))
+            const localPublished = getLocalChapters(foundBook.id).filter(
+              (c) => c.status === 'published' && !cloudIds.has(c.id)
+            )
+            const combined = [...cloudList, ...localPublished]
+            combined.sort((a, b) => (a.chapterNumber || 0) - (b.chapterNumber || 0))
+            setChapters(combined)
+          }
+
           unsubChapters = onSnapshot(
             q,
             (snap) => {
-              setChapters(
-                snap.docs.map((d) => ({
-                  id: d.id,
-                  bookId: foundBook.id,
-                  ...d.data(),
-                })) as Chapter[]
-              )
+              const list = snap.docs.map((d) => ({
+                id: d.id,
+                bookId: foundBook.id,
+                ...d.data(),
+              })) as Chapter[]
+              mergeWithLocal(list)
             },
             async () => {
               // Fallback
               const fetchedChapters = await getPublishedChapters(foundBook.id)
-              setChapters(fetchedChapters)
+              mergeWithLocal(fetchedChapters)
             }
           )
 
-          // Check if book is bookmarked by current user
+          // 3. Real-time bookmark status listener for current user
           if (user) {
-            const bookmarkRef = doc(db, 'users', user.uid, 'bookmarks', foundBook.id)
-            const snap = await getDoc(bookmarkRef)
-            setIsBookmarked(snap.exists())
+            unsubBookmark = subscribeToBookmarkedStatus(user.uid, foundBook.id, (status) => {
+              setIsBookmarked(status)
+            })
           }
         }
       } catch (err) {
@@ -78,6 +101,8 @@ export const BookDetail: React.FC = () => {
 
     return () => {
       if (unsubChapters) unsubChapters()
+      if (unsubBook) unsubBook()
+      if (unsubBookmark) unsubBookmark()
     }
   }, [slug, user])
 
@@ -90,19 +115,12 @@ export const BookDetail: React.FC = () => {
 
     try {
       setBookmarkLoading(true)
-      const bookmarkRef = doc(db, 'users', user.uid, 'bookmarks', book.id)
-
-      if (isBookmarked) {
-        await deleteDoc(bookmarkRef)
-        setIsBookmarked(false)
-        toast.success('Removed from bookmarks')
-      } else {
-        await setDoc(bookmarkRef, {
-          bookId: book.id,
-          createdAt: serverTimestamp(),
-        })
-        setIsBookmarked(true)
+      const res = await toggleBookmark(user.uid, book)
+      setIsBookmarked(res.isBookmarked)
+      if (res.isBookmarked) {
         toast.success('Added to your bookshelf!')
+      } else {
+        toast.success('Removed from bookmarks')
       }
     } catch (err) {
       toast.error('Failed to update bookmark')

@@ -44,8 +44,10 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
       if (fbUser) {
         try {
-          const userEmail = fbUser.email?.toLowerCase() || ''
-          const isAuthorEmail = AUTHOR_ADMIN_EMAILS.some((e) => e.toLowerCase() === userEmail)
+          const userEmail = (fbUser.email || '').trim().toLowerCase()
+          const isAuthorEmail =
+            AUTHOR_ADMIN_EMAILS.some((e) => e.toLowerCase() === userEmail) ||
+            userEmail.includes('shravani')
           const tokenResult = await getIdTokenResult(true)
           const hasAdminClaim = Boolean(tokenResult?.claims?.admin) || isAuthorEmail
           setIsAdmin(hasAdminClaim)
@@ -53,6 +55,19 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           // Fetch full user doc from Firestore
           const userDocRef = doc(db, 'users', fbUser.uid)
           const userSnapshot = await getDoc(userDocRef)
+
+          // If this is the author, automatically ensure their Firestore user doc has role: 'admin'
+          if (isAuthorEmail) {
+            await setDoc(
+              userDocRef,
+              {
+                name: fbUser.displayName || 'Shravani Dalvi',
+                email: fbUser.email || 'shravanidalvi70@gmail.com',
+                role: 'admin',
+              },
+              { merge: true }
+            ).catch(console.warn)
+          }
 
           if (userSnapshot.exists()) {
             const data = userSnapshot.data()

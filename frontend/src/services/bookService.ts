@@ -5,12 +5,22 @@ import {
   orderBy,
   limit,
   getDocs,
+  doc,
+  getDoc,
   collectionGroup,
   onSnapshot,
   Unsubscribe,
 } from 'firebase/firestore'
 import { db } from './firebase'
-import { getLocalBooks, getLocalBookBySlug } from './localBooksService'
+import {
+  getLocalBooks,
+  getLocalBookBySlug,
+  getLocalBookById,
+  getLocalChapters,
+  getDeletedChapterIds,
+  LOCAL_BOOKS_EVENT,
+  LOCAL_CHAPTERS_EVENT,
+} from './localBooksService'
 import type { Book, Chapter } from '../types'
 
 function getMillis(val: unknown): number {
@@ -23,58 +33,122 @@ function getMillis(val: unknown): number {
 
 /**
  * Real-time subscription to published books for Library & Home.
- * Automatically updates reader views when author publishes, edits, or adds books!
+ * Automatically synchronizes with the exact published chapters count in real-time.
  */
 export function subscribeToPublishedBooks(
   callback: (books: Book[]) => void,
   genreFilter?: string
 ): Unsubscribe {
-  const booksRef = collection(db, 'books')
-  const q = query(
-    booksRef,
-    where('visibility', '==', 'published')
-  )
+  let cloudBooks: Book[] = []
+  let publishedChapterCountsByBook: Record<string, number> = {}
 
-  return onSnapshot(
-    q,
+  const dispatchUpdate = () => {
+    const cloudIds = new Set(cloudBooks.map((b) => b.id))
+    const localPublished = getLocalBooks().filter(
+      (b) => b.visibility === 'published' && !cloudIds.has(b.id)
+    )
+
+    // Compute realtime chapter count for local chapters too (filtering out deleted)
+    const deletedChapterIds = getDeletedChapterIds()
+    const localChapters = getLocalChapters().filter((c) => !deletedChapterIds.has(c.id))
+    const localChapterCounts: Record<string, number> = {}
+    for (const ch of localChapters) {
+      if (ch.status === 'published' && ch.bookId) {
+        localChapterCounts[ch.bookId] = (localChapterCounts[ch.bookId] || 0) + 1
+      }
+    }
+
+    const books = [...cloudBooks, ...localPublished].map((b) => {
+      // Real-time published chapters count calculation
+      const liveCloudCount = publishedChapterCountsByBook[b.id]
+      const liveLocalCount = localChapterCounts[b.id] || 0
+      const exactCount =
+        typeof liveCloudCount === 'number'
+          ? Math.max(liveCloudCount, liveLocalCount)
+          : (liveLocalCount || b.chapterCount || 0)
+
+      return {
+        ...b,
+        chapterCount: exactCount,
+      }
+    })
+
+    books.sort((a, b) => getMillis(b.updatedAt) - getMillis(a.updatedAt))
+
+    if (genreFilter && genreFilter !== 'All') {
+      callback(
+        books.filter(
+          (b) => b.genres && b.genres.some((g) => g.toLowerCase() === genreFilter.toLowerCase())
+        )
+      )
+    } else {
+      callback(books)
+    }
+  }
+
+  // 1. Real-time listener for published books
+  const booksRef = collection(db, 'books')
+  const qBooks = query(booksRef, where('visibility', '==', 'published'))
+  const unsubBooks = onSnapshot(
+    qBooks,
     (snapshot) => {
-      const cloudBooks = snapshot.docs.map((doc) => ({
+      cloudBooks = snapshot.docs.map((doc) => ({
         id: doc.id,
         ...doc.data(),
       })) as Book[]
-
-      const cloudIds = new Set(cloudBooks.map((b) => b.id))
-      const localPublished = getLocalBooks().filter(
-        (b) => b.visibility === 'published' && !cloudIds.has(b.id)
-      )
-      const books = [...cloudBooks, ...localPublished]
-
-      books.sort((a, b) => getMillis(b.updatedAt) - getMillis(a.updatedAt))
-
-      if (genreFilter && genreFilter !== 'All') {
-        callback(
-          books.filter(
-            (b) => b.genres && b.genres.some((g) => g.toLowerCase() === genreFilter.toLowerCase())
-          )
-        )
-      } else {
-        callback(books)
-      }
+      dispatchUpdate()
     },
     (err) => {
       console.warn('Real-time cloud books listener blocked or unavailable, using local published books:', err)
-      const localBooks = getLocalBooks().filter((b) => b.visibility === 'published')
-      if (genreFilter && genreFilter !== 'All') {
-        callback(
-          localBooks.filter(
-            (b) => b.genres && b.genres.some((g) => g.toLowerCase() === genreFilter.toLowerCase())
-          )
-        )
-      } else {
-        callback(localBooks)
-      }
+      dispatchUpdate()
     }
   )
+
+  // 2. Real-time listener for all published chapters across all books (collectionGroup)
+  let unsubChapters: (() => void) | undefined
+  try {
+    const chaptersQuery = query(
+      collectionGroup(db, 'chapters'),
+      where('status', '==', 'published')
+    )
+    unsubChapters = onSnapshot(
+      chaptersQuery,
+      (snapshot) => {
+        const counts: Record<string, number> = {}
+        for (const docSnap of snapshot.docs) {
+          const data = docSnap.data()
+          const bookId = data.bookId || docSnap.ref.parent.parent?.id
+          if (bookId) {
+            counts[bookId] = (counts[bookId] || 0) + 1
+          }
+        }
+        publishedChapterCountsByBook = counts
+        dispatchUpdate()
+      },
+      (err) => {
+        console.warn('Real-time collectionGroup chapters count fallback:', err)
+        dispatchUpdate()
+      }
+    )
+  } catch (err) {
+    console.warn('Could not attach collectionGroup listener:', err)
+  }
+
+  // 3. Local storage listeners
+  const handleLocalUpdate = () => dispatchUpdate()
+  if (typeof window !== 'undefined') {
+    window.addEventListener(LOCAL_BOOKS_EVENT, handleLocalUpdate)
+    window.addEventListener(LOCAL_CHAPTERS_EVENT, handleLocalUpdate)
+  }
+
+  return () => {
+    unsubBooks()
+    if (unsubChapters) unsubChapters()
+    if (typeof window !== 'undefined') {
+      window.removeEventListener(LOCAL_BOOKS_EVENT, handleLocalUpdate)
+      window.removeEventListener(LOCAL_CHAPTERS_EVENT, handleLocalUpdate)
+    }
+  }
 }
 
 /**
@@ -95,26 +169,49 @@ export function subscribeToLatestChapters(
 ): Unsubscribe {
   const chaptersQuery = query(
     collectionGroup(db, 'chapters'),
-    where('status', '==', 'published'),
-    limit(limitCount)
+    where('status', '==', 'published')
   )
 
-  return onSnapshot(
+  const handleUpdate = (cloudChapters: Chapter[]) => {
+    const cloudIds = new Set(cloudChapters.map((c) => c.id))
+    const localPublished = getLocalChapters().filter(
+      (c) => c.status === 'published' && !cloudIds.has(c.id)
+    )
+    const combined = [...cloudChapters, ...localPublished]
+    combined.sort(
+      (a, b) =>
+        getMillis(b.updatedAt || b.createdAt) - getMillis(a.updatedAt || a.createdAt)
+    )
+    callback(combined.slice(0, limitCount))
+  }
+
+  const unsub = onSnapshot(
     chaptersQuery,
     (snapshot) => {
       const chapters = snapshot.docs.map((doc) => ({
         id: doc.id,
+        bookId: doc.data().bookId || doc.ref.parent.parent?.id,
         ...doc.data(),
       })) as Chapter[]
-
-      chapters.sort((a, b) => getMillis(b.updatedAt) - getMillis(a.updatedAt))
-      callback(chapters)
+      handleUpdate(chapters)
     },
     (err) => {
-      console.error('Error in real-time chapters subscription:', err)
-      callback([])
+      console.warn('Real-time chapters subscription fallback to local:', err)
+      handleUpdate([])
     }
   )
+
+  const handleLocal = () => handleUpdate([])
+  if (typeof window !== 'undefined') {
+    window.addEventListener(LOCAL_CHAPTERS_EVENT, handleLocal)
+  }
+
+  return () => {
+    unsub()
+    if (typeof window !== 'undefined') {
+      window.removeEventListener(LOCAL_CHAPTERS_EVENT, handleLocal)
+    }
+  }
 }
 
 /**
@@ -172,32 +269,40 @@ export async function getPublishedBooks(genreFilter?: string): Promise<Book[]> {
 }
 
 /**
- * Fetch a single published book by its slug
+ * Fetch a single book by its slug (or id), supporting both published releases and author drafts
  */
 export async function getBookBySlug(slug: string): Promise<Book | null> {
   try {
     const booksRef = collection(db, 'books')
-    const q = query(
-      booksRef,
-      where('slug', '==', slug),
-      where('visibility', '==', 'published'),
-      limit(1)
-    )
-
+    // 1. First attempt: match slug
+    const q = query(booksRef, where('slug', '==', slug), limit(1))
     const snapshot = await getDocs(q)
     if (!snapshot.empty) {
-      const doc = snapshot.docs[0]
+      const docSnapshot = snapshot.docs[0]
       return {
-        id: doc.id,
-        ...doc.data(),
+        id: docSnapshot.id,
+        ...docSnapshot.data(),
       } as Book
     }
+
+    // 2. Second attempt: match direct document ID
+    try {
+      const directRef = doc(db, 'books', slug)
+      const directSnap = await getDoc(directRef)
+      if (directSnap.exists()) {
+        return {
+          id: directSnap.id,
+          ...directSnap.data(),
+        } as Book
+      }
+    } catch {}
   } catch (err) {
     console.warn('Error fetching book from cloud Firestore, checking local registry:', err)
   }
 
-  const local = getLocalBookBySlug(slug)
-  if (local && local.visibility === 'published') {
+  // 3. Check local books by slug or ID
+  const local = getLocalBookBySlug(slug) || getLocalBookById(slug)
+  if (local) {
     return local
   }
   return null

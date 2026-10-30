@@ -13,6 +13,7 @@ export interface ChapterListProps {
   isAuthenticated?: boolean
   lastReadChapterNumber?: number
   onReorder?: (reorderedChapters: Chapter[]) => void
+  onDelete?: (chapter: Chapter) => void
 }
 
 export const ChapterList: React.FC<ChapterListProps> = ({
@@ -23,6 +24,7 @@ export const ChapterList: React.FC<ChapterListProps> = ({
   isAuthenticated = false,
   lastReadChapterNumber,
   onReorder,
+  onDelete,
 }) => {
   const handleDragEnd = (result: DropResult) => {
     if (!result.destination || !onReorder) return
@@ -53,51 +55,86 @@ export const ChapterList: React.FC<ChapterListProps> = ({
               ref={provided.innerRef}
               className="space-y-3"
             >
-              {chapters.map((chapter, index) => (
-                <Draggable
-                  key={chapter.id}
-                  draggableId={chapter.id}
-                  index={index}
-                >
-                  {(providedDraggable) => (
-                    <div
-                      ref={providedDraggable.innerRef}
-                      {...providedDraggable.draggableProps}
-                      className="flex items-center justify-between p-4 bg-parchment border-3 border-ink shadow-hard-sm"
-                    >
-                      <div className="flex items-center gap-3">
-                        <span
-                          {...providedDraggable.dragHandleProps}
-                          className="cursor-grab active:cursor-grabbing text-muted hover:text-ink text-xl select-none"
-                          title="Drag to reorder"
-                        >
-                          ⠿
-                        </span>
-                        <div>
-                          <span className="font-bangers text-lg text-ink mr-2">
-                            CH {chapter.chapterNumber}:
+              {chapters.map((chapter, index) => {
+                const readUrl = `/read/${bookSlug || bookId}/${chapter.chapterNumber}?chapterId=${chapter.id}`
+                const editUrl = `/admin/chapters/${chapter.id}/edit?bookId=${bookId}`
+
+                return (
+                  <Draggable
+                    key={chapter.id}
+                    draggableId={chapter.id}
+                    index={index}
+                  >
+                    {(providedDraggable) => (
+                      <div
+                        ref={providedDraggable.innerRef}
+                        {...providedDraggable.draggableProps}
+                        className="flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-parchment border-3 border-ink shadow-hard-sm hover:shadow-hard hover:-translate-y-0.5 transition-all gap-4 group"
+                      >
+                        {/* Left: Drag Handle + Clickable Chapter Title for viewing content */}
+                        <div className="flex items-center gap-3 flex-1 min-w-0">
+                          <span
+                            {...providedDraggable.dragHandleProps}
+                            className="cursor-grab active:cursor-grabbing text-muted hover:text-ink text-xl select-none p-1"
+                            title="Drag to reorder"
+                          >
+                            ⠿
                           </span>
-                          <span className="font-grotesk font-bold text-ink">
-                            {chapter.title}
-                          </span>
+                          <Link
+                            to={readUrl}
+                            className="flex items-baseline gap-2 flex-1 min-w-0 group-hover:opacity-90"
+                            title="Click to view inside chapter content"
+                          >
+                            <span className="font-bangers text-xl text-ink shrink-0 group-hover:underline">
+                              CH {chapter.chapterNumber}:
+                            </span>
+                            <span className="font-grotesk font-bold text-ink truncate group-hover:text-hunter">
+                              {chapter.title}
+                            </span>
+                            <span className="text-xs font-bangers text-muted/70 ml-2 hidden md:inline group-hover:text-ink">
+                              VIEW CONTENT →
+                            </span>
+                          </Link>
+                        </div>
+
+                        {/* Right: Badge, View button, Edit button, Delete button */}
+                        <div className="flex items-center gap-2 shrink-0 self-end sm:self-center">
+                          <Badge variant={chapter.status === 'published' ? 'mint' : 'yellow'}>
+                            {chapter.status}
+                          </Badge>
+                          <Link
+                            to={readUrl}
+                            className="px-3 py-1 bg-parchment hover:bg-white text-ink border-2 border-ink font-bangers text-xs shadow-hard-sm transition-colors flex items-center gap-1"
+                            title="View Inside Content"
+                          >
+                            👁️ VIEW
+                          </Link>
+                          <Link
+                            to={editUrl}
+                            className="px-3 py-1 bg-sage hover:bg-parchment text-ink border-2 border-ink font-bangers text-xs shadow-hard-sm transition-colors flex items-center gap-1"
+                            title="Edit Chapter"
+                          >
+                            ✏️ EDIT
+                          </Link>
+                          {onDelete && (
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                onDelete(chapter)
+                              }}
+                              className="px-2.5 py-1 bg-[#4A1A23] hover:bg-ink text-[#D8D0C2] border-2 border-ink font-bangers text-xs shadow-hard-sm transition-colors"
+                              title="Delete Chapter"
+                            >
+                              ✕
+                            </button>
+                          )}
                         </div>
                       </div>
-
-                      <div className="flex items-center gap-3">
-                        <Badge variant={chapter.status === 'published' ? 'mint' : 'yellow'}>
-                          {chapter.status}
-                        </Badge>
-                        <Link
-                          to={`/admin/chapters/${chapter.id}/edit?bookId=${bookId}`}
-                          className="px-3 py-1 bg-sage text-ink border-2 border-ink font-bangers text-xs shadow-hard-sm hover:bg-parchment transition-colors"
-                        >
-                          EDIT
-                        </Link>
-                      </div>
-                    </div>
-                  )}
-                </Draggable>
-              ))}
+                    )}
+                  </Draggable>
+                )
+              })}
               {provided.placeholder}
             </div>
           )}

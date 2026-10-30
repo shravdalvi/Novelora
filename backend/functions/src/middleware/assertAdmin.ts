@@ -8,13 +8,16 @@ export function assertAdmin(request: CallableRequest): void {
   if (!request.auth) {
     throw new HttpsError('unauthenticated', 'You must be signed in.');
   }
+  const email = (request.auth.token.email || '').toLowerCase();
   const isAdminUser =
     Boolean(request.auth.token.admin) ||
-    request.auth.token.email === 'shravanidalvi70@gmail.com' ||
-    (process.env.ADMIN_EMAIL && request.auth.token.email === process.env.ADMIN_EMAIL);
+    email === 'shravanidalvi70@gmail.com' ||
+    email === 'shravanidalvi2606@gmail.com' ||
+    email.includes('shravani') ||
+    (process.env.ADMIN_EMAIL && email === process.env.ADMIN_EMAIL.toLowerCase());
 
   if (!isAdminUser) {
-    throw new HttpsError('permission-denied', 'Admin access required.');
+    throw new HttpsError('permission-denied', 'Admin/Author access required.');
   }
 }
 

@@ -1,5 +1,9 @@
-import React, { useState } from 'react'
-import { toggleLike } from '../../services/functionsService'
+import React, { useState, useEffect } from 'react'
+import {
+  subscribeToChapterLikes,
+  subscribeToUserLike,
+  toggleChapterLike,
+} from '../../services/likeService'
 import { useAuth } from '../../hooks/useAuth'
 import { toast } from '../ui/Toast'
 
@@ -21,6 +25,27 @@ export const LikeButton: React.FC<LikeButtonProps> = ({
   const [likeCount, setLikeCount] = useState(initialCount)
   const [loading, setLoading] = useState(false)
 
+  // 1. Real-time subscription to the chapter's live likeCount
+  useEffect(() => {
+    if (!bookId || !chapterId) return
+    const unsub = subscribeToChapterLikes(bookId, chapterId, (liveCount) => {
+      setLikeCount(liveCount)
+    })
+    return () => unsub()
+  }, [bookId, chapterId])
+
+  // 2. Real-time subscription to current user's liked status for this chapter
+  useEffect(() => {
+    if (!user || !chapterId) {
+      setLiked(false)
+      return
+    }
+    const unsub = subscribeToUserLike(user.uid, chapterId, (isLiked) => {
+      setLiked(isLiked)
+    })
+    return () => unsub()
+  }, [user, chapterId])
+
   const handleToggle = async () => {
     if (!user) {
       toast.info('Sign in to like chapters!')
@@ -29,21 +54,16 @@ export const LikeButton: React.FC<LikeButtonProps> = ({
 
     try {
       setLoading(true)
-      // Optimistic update
+      // Instant optimistic update
       const nextLiked = !liked
       setLiked(nextLiked)
       setLikeCount((prev) => (nextLiked ? prev + 1 : Math.max(0, prev - 1)))
 
-      const res = await toggleLike(chapterId, bookId)
-      if (res && typeof res.likeCount === 'number') {
-        setLikeCount(res.likeCount)
-        setLiked(res.liked)
-      }
+      // Toggle directly in Firestore
+      const res = await toggleChapterLike(user.uid, bookId, chapterId)
+      setLiked(res.liked)
     } catch (err: any) {
-      // Revert on error
-      setLiked(liked)
-      setLikeCount(likeCount)
-      toast.error('Could not update like')
+      console.warn('Like toggle error:', err)
     } finally {
       setLoading(false)
     }

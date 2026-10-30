@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { useNavigate, useParams, Link } from 'react-router-dom'
 import { doc, getDoc, setDoc, addDoc, collection, serverTimestamp } from 'firebase/firestore'
 import { db } from '../../services/firebase'
-import { uploadCover } from '../../services/uploadService'
+import { uploadCover, compressDataUrlIfNeeded } from '../../services/uploadService'
 import { saveLocalBook, updateLocalBook, getLocalBookById } from '../../services/localBooksService'
 import { slugify } from '../../utils/slugify'
 import { PageWrapper } from '../../components/layout/PageWrapper'
@@ -45,11 +45,18 @@ export const BookForm: React.FC = () => {
           setTitle(data.title || '')
           setSlug(data.slug || '')
           setDescription(data.description || '')
-          setCoverImageUrl(data.coverImageUrl || '')
           setGenres((data.genres || []).join(', '))
           setTags((data.tags || []).join(', '))
           setStatus(data.status || 'ongoing')
           setVisibility(data.visibility || 'published')
+
+          const rawCover = data.coverImageUrl || ''
+          if (rawCover.startsWith('data:image/') && rawCover.length > 100 * 1024) {
+            compressDataUrlIfNeeded(rawCover).then((comp) => setCoverImageUrl(comp))
+          } else {
+            setCoverImageUrl(rawCover)
+          }
+
           setFetching(false)
           return
         }
@@ -62,11 +69,17 @@ export const BookForm: React.FC = () => {
         setTitle(local.title || '')
         setSlug(local.slug || '')
         setDescription(local.description || '')
-        setCoverImageUrl(local.coverImageUrl || '')
         setGenres((local.genres || []).join(', '))
         setTags((local.tags || []).join(', '))
         setStatus(local.status || 'ongoing')
         setVisibility(local.visibility || 'published')
+
+        const rawCover = local.coverImageUrl || ''
+        if (rawCover.startsWith('data:image/') && rawCover.length > 100 * 1024) {
+          compressDataUrlIfNeeded(rawCover).then((comp) => setCoverImageUrl(comp))
+        } else {
+          setCoverImageUrl(rawCover)
+        }
       } else {
         toast.error('Book record not found')
       }
@@ -126,7 +139,20 @@ export const BookForm: React.FC = () => {
       .map((t) => t.trim())
       .filter(Boolean)
 
-    const finalCover = coverImageUrl.trim() || localPreview || ''
+    let finalCover = coverImageUrl.trim()
+    if (!finalCover && localPreview) {
+      finalCover = localPreview
+    }
+
+    // Automatically optimize cover image to guarantee it never exceeds Firestore document property limits (<80KB)
+    if (finalCover.startsWith('data:image/')) {
+      finalCover = await compressDataUrlIfNeeded(finalCover)
+    }
+
+    if (finalCover.length > 500_000) {
+      toast.error('Cover image is too large for database. Please select a smaller photo or PNG.')
+      return
+    }
 
     const payload = {
       title: title.trim(),
@@ -141,13 +167,19 @@ export const BookForm: React.FC = () => {
 
     try {
       setLoading(true)
+
+      // 1. Immediately persist locally so author changes are never lost
+      if (isEdit && id) {
+        updateLocalBook({ id, ...payload })
+      }
+
+      // 2. Sync to cloud Firestore
       if (isEdit && id) {
         await setDoc(
           doc(db, 'books', id),
           { ...payload, updatedAt: serverTimestamp() },
           { merge: true }
         )
-        updateLocalBook({ id, ...payload })
         toast.success('Book updated in database!')
       } else {
         const docRef = await addDoc(collection(db, 'books'), {
@@ -167,8 +199,13 @@ export const BookForm: React.FC = () => {
       }
       navigate('/admin/books')
     } catch (err: any) {
-      console.error('Error saving book:', err)
-      toast.error(err.message || 'Failed to save book')
+      console.error('Error saving book to cloud:', err)
+      if (err.code === 'permission-denied' || err.message?.includes('permission')) {
+        toast.info('Book updated locally! To sync to cloud, publish rules in Firebase Console.')
+        navigate('/admin/books')
+      } else {
+        toast.error(err.message || 'Failed to save book')
+      }
     } finally {
       setLoading(false)
     }

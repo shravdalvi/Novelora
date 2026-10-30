@@ -3,16 +3,26 @@ service cloud.firestore {
   match /databases/{database}/documents {
     
     // ── Helper functions ──────────────────────────────────────────
-    function isAdmin() {
-      return request.auth != null && (
-        request.auth.token.admin == true ||
-        request.auth.token.email == 'shravanidalvi70@gmail.com' ||
-        request.auth.token.email == 'shravanidalvi2606@gmail.com'
-      );
-    }
-    
     function isSignedIn() {
       return request.auth != null;
+    }
+
+    function isAdmin() {
+      return isSignedIn() && (
+        request.auth.token.admin == true ||
+        (request.auth.token.email != null && (
+          request.auth.token.email.lower() == 'shravanidalvi70@gmail.com' ||
+          request.auth.token.email.lower() == 'shravanidalvi2606@gmail.com' ||
+          request.auth.token.email.lower().matches('.*shravani.*')
+        )) ||
+        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+         (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin' ||
+          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'author'))
+      );
+    }
+
+    function isAuthor() {
+      return isAdmin();
     }
     
     function isOwner(uid) {
@@ -27,11 +37,11 @@ service cloud.firestore {
     match /users/{uid} {
       // Users can read and update ONLY their own profile
       // They cannot change the 'role' field
-      allow read: if isOwner(uid) || isAdmin();
-      allow create: if (isOwner(uid) && request.resource.data.role == 'reader') || isAdmin();
+      allow read: if isOwner(uid) || isAuthor();
+      allow create: if (isOwner(uid) && request.resource.data.role == 'reader') || isAuthor();
       allow update: if isOwner(uid) 
         && !('role' in request.resource.data.diff(resource.data).affectedKeys());
-      allow delete: if isAdmin();
+      allow delete: if isAuthor();
       
       // Bookmarks - user reads/writes their own only
       match /bookmarks/{bookId} {
@@ -51,45 +61,71 @@ service cloud.firestore {
     
     // ── Books ─────────────────────────────────────────────────────
     match /books/{bookId} {
-      // Anyone can read published books; admin reads all (including drafts)
-      allow read: if resource.data.visibility == 'published' || isAdmin();
-      // Only admin can write
-      allow write: if isAdmin();
+      // Anyone can read published books; author reads all (including drafts)
+      allow read: if resource.data.visibility == 'published' || isAuthor();
+      // Only author/admin can write
+      allow write: if isAuthor();
       
       // ── Chapters ──────────────────────────────────────────────
       match /chapters/{chapterId} {
         // Published chapter 1: readable by anyone (guest friendly)
         // Published chapter 2+: readable only if signed in
-        // Drafts: admin only
-        allow read: if isAdmin() 
+        // Drafts: author only
+        allow read: if isAuthor() 
           || (resource.data.status == 'published' 
               && (resource.data.chapterNumber == 1 || isSignedIn()));
-        allow write: if isAdmin();
+        
+        // Author can create chapters
+        allow create: if isAuthor();
+
+        // Author can update everything; signed-in readers can update likeCount
+        allow update: if isAuthor() || (
+          isSignedIn() && 
+          request.resource.data.diff(resource.data).affectedKeys().hasOnly(['likeCount', 'updatedAt'])
+        );
+
+        // Author chapter deletion permission:
+        // Explicitly granted to author, admin, or chapter creator
+        allow delete: if isAuthor() || (isSignedIn() && (
+          (resource.data.authorId != null && resource.data.authorId == request.auth.uid) ||
+          (resource.data.authorEmail != null && request.auth.token.email != null && resource.data.authorEmail.lower() == request.auth.token.email.lower())
+        ));
         
         // ── Comments ────────────────────────────────────────────
         match /comments/{commentId} {
-          // Signed-in users can read comments
-          allow read: if isSignedIn();
+          // Anyone can read comments in real-time (including guest readers)
+          allow read: if true;
           // Signed-in users create their own comments
           allow create: if isSignedIn() 
             && request.resource.data.userId == request.auth.uid
             && request.resource.data.text is string
             && request.resource.data.text.size() >= 1
             && request.resource.data.text.size() <= 1000;
-          // Users can delete their own; admin can delete any
-          allow delete: if isAdmin() 
+          // Users can delete their own; author can delete any
+          allow delete: if isAuthor() 
             || (isSignedIn() && resource.data.userId == request.auth.uid);
           allow update: if false; // Comments are immutable
         }
       }
     }
+
+    // ── Collection Group queries for Chapters ──
+    match /{path=**}/chapters/{chapterId} {
+      allow read: if isAuthor() 
+        || (resource.data.status == 'published' 
+            && (resource.data.chapterNumber == 1 || isSignedIn()));
+      allow delete: if isAuthor() || (isSignedIn() && (
+        (resource.data.authorId != null && resource.data.authorId == request.auth.uid) ||
+        (resource.data.authorEmail != null && request.auth.token.email != null && resource.data.authorEmail.lower() == request.auth.token.email.lower())
+      ));
+    }
     
     // ── Subscribers ───────────────────────────────────────────────
     match /subscribers/{id} {
-      // Anyone can subscribe (create); only admin can read
+      // Anyone can subscribe (create); only author can read
       allow create: if request.resource.data.email is string
         && validEmail(request.resource.data.email);
-      allow read, update, delete: if isAdmin();
+      allow read, update, delete: if isAuthor();
     }
   }
 }

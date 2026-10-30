@@ -6,24 +6,28 @@ import Image from '@tiptap/extension-image'
 import Underline from '@tiptap/extension-underline'
 import TextAlign from '@tiptap/extension-text-align'
 import { VideoExtension } from '../../utils/tiptapVideo'
-import { doc, getDoc, setDoc, addDoc, collection, serverTimestamp, updateDoc, increment } from 'firebase/firestore'
+import { getYouTubeEmbedUrl } from '../../utils/youtube'
+import { doc, getDoc, setDoc, addDoc, collection, getDocs, serverTimestamp, updateDoc, deleteDoc, query, where } from 'firebase/firestore'
 import { db } from '../../services/firebase'
-import { uploadChapterImage } from '../../services/uploadService'
-import { useAutoSave } from '../../hooks/useAutoSave'
+import { uploadChapterImage, compressDataUrlIfNeeded } from '../../services/uploadService'
+import { getLocalBooks, getLocalChapterById, saveLocalChapter, deleteLocalChapter, updateLocalBook } from '../../services/localBooksService'
+import { useAuth } from '../../hooks/useAuth'
 import { PageWrapper } from '../../components/layout/PageWrapper'
 import { Button } from '../../components/ui/Button'
 import { Input } from '../../components/ui/Input'
 import { Select } from '../../components/ui/Select'
 import { Modal } from '../../components/ui/Modal'
 import { toast } from '../../components/ui/Toast'
-import type { Chapter, ChapterStatus } from '../../types'
+import type { Chapter, ChapterStatus, Book } from '../../types'
 
 export const WritingStudio: React.FC = () => {
   const { id } = useParams<{ id: string }>()
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
 
-  const bookId = searchParams.get('bookId') || ''
+  const paramBookId = searchParams.get('bookId') || ''
+  const [bookId, setBookId] = useState(paramBookId)
+  const [availableBooks, setAvailableBooks] = useState<Book[]>([])
   const isNew = id === 'new'
   const nextNumParam = searchParams.get('nextNumber')
 
@@ -33,9 +37,16 @@ export const WritingStudio: React.FC = () => {
   )
   const [status, setStatus] = useState<ChapterStatus>('draft')
   const [wordCount, setWordCount] = useState(0)
-  const [loading, setLoading] = useState(false)
+  const [savingDraft, setSavingDraft] = useState(false)
+  const [publishing, setPublishing] = useState(false)
+  const isSaving = savingDraft || publishing
   const [fetching, setFetching] = useState(!isNew)
+  const { user } = useAuth()
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
+  const [deleting, setDeleting] = useState(false)
   const [uploadingImage, setUploadingImage] = useState(false)
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false)
+  const [lastSaved, setLastSaved] = useState<Date | null>(null)
 
   // Chapter Header Media (Photo & Video like Wattpad)
   const [headerImageUrl, setHeaderImageUrl] = useState<string>('')
@@ -63,7 +74,8 @@ export const WritingStudio: React.FC = () => {
     ],
     editorProps: {
       attributes: {
-        class: 'focus:outline-none max-w-none min-h-[500px]',
+        class:
+          'focus:outline-none max-w-none min-h-[500px] font-reading-sans text-base sm:text-lg leading-relaxed text-ink',
       },
     },
     content: '<p>Start writing your chapter here...</p>',
@@ -72,10 +84,35 @@ export const WritingStudio: React.FC = () => {
       const text = ed.getText()
       const words = text.trim() ? text.trim().split(/\s+/).length : 0
       setWordCount(words)
+      setHasUnsavedChanges(true)
     },
   })
 
   // Load existing chapter
+  useEffect(() => {
+    // 1. Fetch available books if bookId is not in URL
+    const loadBooks = async () => {
+      try {
+        const snap = await getDocs(collection(db, 'books'))
+        const cloudList = snap.docs.map((d) => ({ id: d.id, ...d.data() })) as Book[]
+        const cloudIds = new Set(cloudList.map((b) => b.id))
+        const localList = getLocalBooks().filter((b) => !cloudIds.has(b.id))
+        const all = [...cloudList, ...localList]
+        setAvailableBooks(all)
+        if (!bookId && all.length > 0) {
+          setBookId(all[0].id)
+        }
+      } catch {
+        const local = getLocalBooks()
+        setAvailableBooks(local)
+        if (!bookId && local.length > 0) {
+          setBookId(local[0].id)
+        }
+      }
+    }
+    loadBooks()
+  }, [])
+
   useEffect(() => {
     async function loadChapter() {
       if (isNew || !bookId || !id) return
@@ -97,9 +134,37 @@ export const WritingStudio: React.FC = () => {
           if (editor && data.content) {
             editor.commands.setContent(data.content)
           }
+        } else {
+          // Check local chapter backup
+          const local = getLocalChapterById(id)
+          if (local) {
+            setTitle(local.title || '')
+            setChapterNumber(local.chapterNumber || 1)
+            setStatus(local.status || 'draft')
+            setWordCount(local.wordCount || 0)
+            setHeaderImageUrl(local.headerImageUrl || '')
+            setHeaderVideoUrl(local.headerVideoUrl || '')
+            if (editor && local.content) {
+              editor.commands.setContent(local.content)
+            }
+          }
         }
       } catch (err) {
-        toast.error('Failed to load chapter content')
+        // Fallback local backup on network issue
+        const local = getLocalChapterById(id)
+        if (local) {
+          setTitle(local.title || '')
+          setChapterNumber(local.chapterNumber || 1)
+          setStatus(local.status || 'draft')
+          setWordCount(local.wordCount || 0)
+          setHeaderImageUrl(local.headerImageUrl || '')
+          setHeaderVideoUrl(local.headerVideoUrl || '')
+          if (editor && local.content) {
+            editor.commands.setContent(local.content)
+          }
+        } else {
+          toast.error('Failed to load chapter content')
+        }
       } finally {
         setFetching(false)
       }
@@ -110,20 +175,73 @@ export const WritingStudio: React.FC = () => {
     }
   }, [isNew, bookId, id, editor])
 
-  // Save function for auto-save and manual saves
+  // Recursively compress any oversized base64 images inside editor content before saving to Firestore
+  const sanitizeContentImages = async (node: any): Promise<any> => {
+    if (!node || typeof node !== 'object') return node
+
+    if (node.type === 'image' && node.attrs?.src && typeof node.attrs.src === 'string') {
+      const src = node.attrs.src as string
+      if (src.startsWith('data:image/')) {
+        try {
+          const compressed = await compressDataUrlIfNeeded(src)
+          return {
+            ...node,
+            attrs: {
+              ...node.attrs,
+              src: compressed,
+            },
+          }
+        } catch {
+          return node
+        }
+      }
+    }
+
+    if (Array.isArray(node.content)) {
+      const sanitizedChildren = await Promise.all(node.content.map(sanitizeContentImages))
+      return { ...node, content: sanitizedChildren }
+    }
+
+    return node
+  }
+
+  // Helper to re-count published chapters and keep book.chapterCount in exact sync
+  const syncBookChapterCount = async (targetBookId: string) => {
+    try {
+      const pubSnap = await getDocs(
+        query(
+          collection(db, 'books', targetBookId, 'chapters'),
+          where('status', '==', 'published')
+        )
+      )
+      const exactCount = pubSnap.size
+      await updateDoc(doc(db, 'books', targetBookId), {
+        chapterCount: exactCount,
+        updatedAt: serverTimestamp(),
+      }).catch(console.warn)
+      updateLocalBook({ id: targetBookId, chapterCount: exactCount })
+    } catch (e) {
+      console.warn('Could not sync exact book chapterCount:', e)
+    }
+  }
+
+  // Save function executed ONLY when author explicitly clicks "SAVE DRAFT" or "PUBLISH NOW"
   const handleSave = async (overrideStatus?: ChapterStatus) => {
     if (!bookId) {
-      toast.error('Missing bookId')
+      toast.error('Please select a target novel before saving the chapter')
       return
     }
 
     const finalStatus = overrideStatus || status
-    const contentJson = editor ? editor.getJSON() : {}
+    const rawContentJson = editor ? editor.getJSON() : {}
+    const contentJson = await sanitizeContentImages(rawContentJson)
     const text = editor ? editor.getText() : ''
     const calculatedWords = text.trim() ? text.trim().split(/\s+/).length : 0
 
     const payload = {
       bookId,
+      authorId: user?.uid || '',
+      authorEmail: user?.email || '',
       title: title.trim() || `Chapter ${chapterNumber}`,
       chapterNumber,
       content: contentJson,
@@ -132,6 +250,13 @@ export const WritingStudio: React.FC = () => {
       overlayOpacity: 0.3,
       status: finalStatus,
       wordCount: calculatedWords,
+    }
+
+    // Guard against Firestore 1MB document limit
+    const payloadSize = JSON.stringify(payload).length
+    if (payloadSize > 950_000) {
+      toast.error('Chapter content is too large (>950KB). Please remove or replace heavy images.')
+      return
     }
 
     if (currentChapterIdRef.current === 'new') {
@@ -146,52 +271,102 @@ export const WritingStudio: React.FC = () => {
           }
         )
         currentChapterIdRef.current = docRef.id
+        saveLocalChapter({
+          id: docRef.id,
+          ...payload,
+          likeCount: 0,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        })
+
         if (finalStatus === 'published') {
-          await updateDoc(doc(db, 'books', bookId), {
-            chapterCount: increment(1),
-            updatedAt: serverTimestamp(),
-          }).catch(console.warn)
+          syncBookChapterCount(bookId)
         }
-        toast.success(finalStatus === 'published' ? 'Chapter published to database!' : 'Chapter created!')
+
+        setHasUnsavedChanges(false)
+        setLastSaved(new Date())
+        toast.success(finalStatus === 'published' ? 'Chapter published to database!' : 'Draft saved to database!')
         navigate(`/admin/chapters/${docRef.id}/edit?bookId=${bookId}`, { replace: true })
       } catch (err: any) {
-        console.error('Failed to create chapter in Firestore:', err)
-        toast.error(err.message || 'Failed to save chapter to database')
+        console.error('Failed to create chapter in Firestore, saving local backup:', err)
+        const localId = `chapter-${Date.now()}`
+        currentChapterIdRef.current = localId
+        saveLocalChapter({
+          id: localId,
+          ...payload,
+          likeCount: 0,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        })
+        setHasUnsavedChanges(false)
+        setLastSaved(new Date())
+        if (err.code === 'permission-denied') {
+          toast.info('Draft saved locally. Note: Update Firestore rules in Firebase Console to sync cloud.')
+        } else {
+          toast.success(finalStatus === 'published' ? 'Chapter published locally!' : 'Draft saved locally!')
+        }
+        navigate(`/admin/chapters/${localId}/edit?bookId=${bookId}`, { replace: true })
       }
     } else {
       const chapterId = currentChapterIdRef.current!
       try {
-        await setDoc(
-          doc(db, 'books', bookId, 'chapters', chapterId),
-          {
-            ...payload,
-            updatedAt: serverTimestamp(),
-          },
-          { merge: true }
-        )
+        // Also persist locally
+        saveLocalChapter({
+          id: chapterId,
+          ...payload,
+          likeCount: 0,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        })
+
+        if (!chapterId.startsWith('chapter-')) {
+          await setDoc(
+            doc(db, 'books', bookId, 'chapters', chapterId),
+            {
+              ...payload,
+              updatedAt: serverTimestamp(),
+            },
+            { merge: true }
+          )
+        }
+
+        if (finalStatus === 'published') {
+          syncBookChapterCount(bookId)
+        }
+
+        setHasUnsavedChanges(false)
+        setLastSaved(new Date())
         toast.success(finalStatus === 'published' ? 'Chapter published to database!' : 'Draft saved to database!')
       } catch (err: any) {
         console.error('Failed to update chapter in Firestore:', err)
-        toast.error(err.message || 'Failed to update chapter in database')
+        setHasUnsavedChanges(false)
+        setLastSaved(new Date())
+        toast.success('Draft saved locally!')
       }
     }
   }
 
-  // Hook up Auto-Save
-  const autoSavePayload = {
-    title,
-    chapterNumber,
-    status,
-    headerImageUrl,
-    headerVideoUrl,
-    content: editor?.getJSON(),
+  const handleDeleteChapter = async () => {
+    if (isNew || !bookId || !id) return
+    const isLocalOnly = id.startsWith('chapter-')
+    try {
+      setDeleting(true)
+      deleteLocalChapter(id)
+      if (!isLocalOnly) {
+        await deleteDoc(doc(db, 'books', bookId, 'chapters', id)).catch(console.warn)
+      }
+      await syncBookChapterCount(bookId)
+      toast.success(isLocalOnly ? 'Draft removed' : 'Chapter deleted from database')
+      navigate(`/admin/books/${bookId}/chapters`)
+    } catch (err: any) {
+      deleteLocalChapter(id)
+      toast.info('Chapter removed locally')
+      navigate(`/admin/books/${bookId}/chapters`)
+    } finally {
+      setDeleting(false)
+      setIsDeleteModalOpen(false)
+    }
   }
-
-  const { status: autoSaveStatus, lastSaved } = useAutoSave(
-    autoSavePayload,
-    () => handleSave(),
-    5000
-  )
 
   const handleSaveVideoUrl = () => {
     if (!videoInputUrl.trim() || !editor) {
@@ -221,18 +396,30 @@ export const WritingStudio: React.FC = () => {
     }
   }
 
-  const handleManualPublish = async () => {
+  const handleSaveDraft = async () => {
+    if (isSaving) return
     try {
-      setLoading(true)
-      setStatus('published')
-      await handleSave('published')
-      toast.success('Chapter published live!')
-    } catch {
-      toast.error('Failed to publish chapter')
+      setSavingDraft(true)
+      setStatus('draft')
+      await handleSave('draft')
     } finally {
-      setLoading(false)
+      setSavingDraft(false)
     }
   }
+
+  const handleManualPublish = async () => {
+    if (isSaving) return
+    try {
+      setPublishing(true)
+      setStatus('published')
+      await handleSave('published')
+    } finally {
+      setPublishing(false)
+    }
+  }
+
+  const currentBook = availableBooks.find((b) => b.id === bookId)
+  const totalChaptersCount = Math.max(currentBook?.chapterCount || 1, chapterNumber)
 
   if (fetching) {
     return (
@@ -257,21 +444,27 @@ export const WritingStudio: React.FC = () => {
               ← CHAPTERS
             </Link>
 
-            {/* AutoSave Status Pill */}
+            {/* Save Status Pill */}
             <div className="hidden sm:flex items-center gap-2 px-3 py-1 bg-parchment border-2 border-ink text-xs font-grotesk font-bold">
-              {autoSaveStatus === 'saving' && (
-                <span className="text-muted animate-pulse">● Saving...</span>
-              )}
-              {autoSaveStatus === 'saved' && (
-                <span className="text-cedar">
-                  ✓ Saved {lastSaved ? lastSaved.toLocaleTimeString() : ''}
+              {isSaving && (
+                <span className="text-muted animate-pulse">
+                  ● {publishing ? 'Publishing...' : 'Saving draft...'}
                 </span>
               )}
-              {autoSaveStatus === 'error' && (
-                <span className="text-soft-coral">✕ Error saving</span>
+              {!isSaving && hasUnsavedChanges && (
+                <span className="text-muted">
+                  ● Unsaved edits (Click Save Draft)
+                </span>
               )}
-              {autoSaveStatus === 'idle' && (
-                <span className="text-muted">Draft ready</span>
+              {!isSaving && !hasUnsavedChanges && lastSaved && (
+                <span className="text-cedar">
+                  ✓ Saved {lastSaved.toLocaleTimeString()}
+                </span>
+              )}
+              {!isSaving && !hasUnsavedChanges && !lastSaved && (
+                <span className="text-muted">
+                  {isNew ? 'New Chapter (Unsaved)' : 'Saved'}
+                </span>
               )}
             </div>
 
@@ -282,11 +475,22 @@ export const WritingStudio: React.FC = () => {
 
           {/* Action Buttons */}
           <div className="flex items-center gap-2">
+            {!isNew && (
+              <Button
+                variant="danger"
+                size="sm"
+                onClick={() => setIsDeleteModalOpen(true)}
+                disabled={isSaving || deleting}
+              >
+                DELETE CHAPTER
+              </Button>
+            )}
             <Button
               variant="secondary"
               size="sm"
-              onClick={() => handleSave('draft')}
-              loading={loading}
+              onClick={handleSaveDraft}
+              loading={savingDraft}
+              disabled={isSaving || deleting}
             >
               SAVE DRAFT
             </Button>
@@ -294,7 +498,8 @@ export const WritingStudio: React.FC = () => {
               variant="primary"
               size="sm"
               onClick={handleManualPublish}
-              loading={loading}
+              loading={publishing}
+              disabled={isSaving || deleting}
             >
               PUBLISH NOW
             </Button>
@@ -304,7 +509,19 @@ export const WritingStudio: React.FC = () => {
         {/* Studio Meta Form */}
         <div className="max-w-4xl mx-auto w-full px-4 pt-6 space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-12 gap-4 bg-parchment border-3 border-ink shadow-hard-sm p-4">
-            <div className="sm:col-span-3">
+            <div className="sm:col-span-4">
+              <Select
+                label="Target Novel"
+                value={bookId}
+                onChange={(e) => setBookId(e.target.value)}
+                options={
+                  availableBooks.length > 0
+                    ? availableBooks.map((b) => ({ value: b.id, label: b.title }))
+                    : [{ value: bookId, label: 'Default Novel' }]
+                }
+              />
+            </div>
+            <div className="sm:col-span-2">
               <Input
                 label="Chapter #"
                 type="number"
@@ -314,7 +531,7 @@ export const WritingStudio: React.FC = () => {
                 required
               />
             </div>
-            <div className="sm:col-span-6">
+            <div className="sm:col-span-4">
               <Input
                 label="Chapter Title"
                 placeholder="e.g. The Awakening"
@@ -323,7 +540,7 @@ export const WritingStudio: React.FC = () => {
                 required
               />
             </div>
-            <div className="sm:col-span-3">
+            <div className="sm:col-span-2">
               <Select
                 label="Status"
                 value={status}
@@ -599,58 +816,219 @@ export const WritingStudio: React.FC = () => {
             </BubbleMenu>
           )}
 
-          {/* Manuscript Canvas */}
-          <div className="bg-parchment border-3 border-ink shadow-hard-lg pl-14 pr-8 py-8 sm:pl-16 sm:pr-12 sm:py-12 mb-16 min-h-[600px] relative">
-            {/* ── FLOATING MENU (Vertical column on each Enter / empty line - Image 2) ── */}
-            {editor && (
-              <FloatingMenu
-                editor={editor}
-                tippyOptions={{
-                  duration: 150,
-                  placement: 'left',
-                  offset: [0, 10],
-                }}
-                className="flex flex-col items-center gap-1.5 select-none z-40 bg-transparent py-0.5"
-              >
-                {/* Photo Icon (Image 2) */}
-                <button
-                  type="button"
-                  onClick={() => inlineImageInputRef.current?.click()}
-                  disabled={uploadingImage}
-                  className="w-7 h-7 rounded hover:bg-ink/10 flex items-center justify-center text-ink/65 hover:text-ink transition-colors cursor-pointer"
-                  title="Insert Photo"
+          {/* Manuscript Canvas (Formatted Chapter Layout matching Reader View) */}
+          <div className="bg-parchment border-3 border-ink shadow-hard-lg px-6 py-8 sm:px-12 sm:py-12 mb-16 min-h-[700px] relative">
+            {/* ── BREADCRUMB BAR (Matching Reader layout) ── */}
+            <div className="flex flex-wrap items-center justify-between gap-3 mb-8 pb-4 border-b-2 border-ink/20 text-xs font-grotesk font-bold select-none">
+              <div className="flex items-center gap-2">
+                <Link
+                  to={bookId ? `/admin/books/${bookId}/chapters` : '/admin/books'}
+                  className="hover:underline flex items-center gap-1 text-ink"
                 >
-                  <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24">
-                    <path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z" />
-                  </svg>
-                </button>
+                  ← {currentBook?.title || 'Selected Novel'}
+                </Link>
+                <Link
+                  to={bookId ? `/admin/books/${bookId}/chapters` : '/admin/books'}
+                  className="hover:underline opacity-60 hover:opacity-100 hidden sm:inline text-ink"
+                >
+                  / Manage Chapters
+                </Link>
+              </div>
 
-                {/* Video Icon (Image 2) */}
+              <div className="flex items-center gap-3 text-ink">
+                <span>
+                  Chapter {chapterNumber} of {totalChaptersCount}
+                </span>
+              </div>
+            </div>
+
+            {/* ── CHAPTER BRANDING HEADER (Matching Reader layout) ── */}
+            <header className="mb-10 text-center space-y-3">
+              {/* Centered CHAPTER badge */}
+              <div className="inline-block bg-sage text-ink border-2 border-ink px-4 py-1 font-bangers text-sm sm:text-base shadow-hard-sm uppercase tracking-wider">
+                CHAPTER {chapterNumber}
+              </div>
+
+              {/* Centered Comic Title (Clickable & Editable directly) */}
+              <div className="w-full">
+                <input
+                  type="text"
+                  value={title}
+                  onChange={(e) => {
+                    setTitle(e.target.value)
+                    setHasUnsavedChanges(true)
+                  }}
+                  placeholder="UNTITLED CHAPTER"
+                  className="font-bangers text-4xl sm:text-5xl md:text-6xl tracking-comic leading-tight text-ink text-center uppercase bg-transparent border-b-2 border-transparent hover:border-ink/25 focus:border-ink focus:outline-none w-full max-w-3xl mx-auto placeholder:text-ink/30 transition-all cursor-text"
+                  title="Click to edit chapter title"
+                />
+              </div>
+
+              {/* Live dynamic word count */}
+              <p className="text-xs sm:text-sm font-grotesk font-bold text-ink/75">
+                Approx. {wordCount} words
+              </p>
+
+              {/* Header Banner controls */}
+              <div className="flex items-center justify-center gap-2 pt-1">
+                <label className="text-[11px] font-bangers text-ink bg-parchment hover:bg-sage border-2 border-ink px-2.5 py-1 shadow-hard-sm cursor-pointer transition-colors">
+                  {headerImageUrl ? 'CHANGE BANNER IMAGE' : '+ ADD HEADER PHOTO'}
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={async (e) => {
+                      const f = e.target.files?.[0]
+                      if (f) {
+                        try {
+                          const url = await uploadChapterImage(f)
+                          setHeaderImageUrl(url)
+                          setHasUnsavedChanges(true)
+                          toast.success('Header image attached!')
+                        } catch {
+                          toast.error('Failed to upload image')
+                        }
+                      }
+                    }}
+                  />
+                </label>
                 <button
                   type="button"
-                  onClick={() => setIsVideoModalOpen(true)}
-                  className="w-7 h-7 rounded hover:bg-ink/10 flex items-center justify-center text-ink/65 hover:text-ink transition-colors cursor-pointer"
-                  title="Insert Video"
+                  onClick={() => {
+                    const url = window.prompt(
+                      'Enter YouTube or MP4 Video URL for Chapter Banner:',
+                      headerVideoUrl
+                    )
+                    if (url !== null) {
+                      setHeaderVideoUrl(url.trim())
+                      setHasUnsavedChanges(true)
+                    }
+                  }}
+                  className="text-[11px] font-bangers text-ink bg-parchment hover:bg-sage border-2 border-ink px-2.5 py-1 shadow-hard-sm transition-colors"
                 >
-                  <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24">
-                    <path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z" />
-                  </svg>
+                  {headerVideoUrl ? 'CHANGE HEADER VIDEO' : '+ ADD HEADER VIDEO'}
                 </button>
-              </FloatingMenu>
+              </div>
+            </header>
+
+            {/* Header Media Banner Preview (Photo or Video) */}
+            {headerImageUrl && (
+              <div className="mb-10 border-3 border-ink shadow-hard-lg overflow-hidden bg-sand max-h-[480px] relative group">
+                <img
+                  src={headerImageUrl}
+                  alt={title || 'Chapter header'}
+                  className="w-full h-full object-cover"
+                />
+                <button
+                  type="button"
+                  onClick={() => {
+                    setHeaderImageUrl('')
+                    setHasUnsavedChanges(true)
+                  }}
+                  className="absolute top-3 right-3 px-2.5 py-1 bg-crimson text-white font-bangers text-xs border-2 border-ink shadow-hard-sm opacity-0 group-hover:opacity-100 transition-opacity"
+                >
+                  REMOVE BANNER
+                </button>
+              </div>
             )}
 
-            {/* Hidden File Picker for inline photo upload */}
-            <input
-              ref={inlineImageInputRef}
-              type="file"
-              accept="image/*"
-              onChange={handleInsertImage}
-              disabled={uploadingImage}
-              className="hidden"
-            />
+            {headerVideoUrl && (
+              <div className="mb-10 border-3 border-ink shadow-hard-lg aspect-video overflow-hidden bg-black relative group">
+                {getYouTubeEmbedUrl(headerVideoUrl) ? (
+                  <iframe
+                    src={getYouTubeEmbedUrl(headerVideoUrl)!}
+                    title={title || 'Chapter video'}
+                    className="w-full h-full"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                  />
+                ) : (
+                  <video
+                    src={headerVideoUrl}
+                    controls
+                    className="w-full h-full"
+                  />
+                )}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setHeaderVideoUrl('')
+                    setHasUnsavedChanges(true)
+                  }}
+                  className="absolute top-3 right-3 px-2.5 py-1 bg-crimson text-white font-bangers text-xs border-2 border-ink shadow-hard-sm opacity-0 group-hover:opacity-100 transition-opacity"
+                >
+                  REMOVE VIDEO
+                </button>
+              </div>
+            )}
 
-            {/* TipTap Editor Content */}
-            <EditorContent editor={editor} />
+            {/* Subtle Divider before text content */}
+            <div className="border-b-2 border-ink/20 mb-8" />
+
+            {/* ── EDITOR BODY WITH FLOATING INLINE MENU ── */}
+            <div className="relative pl-12 sm:pl-14">
+              {/* ── FLOATING MENU (Vertical column on each Enter / empty line - Image 2) ── */}
+              {editor && (
+                <FloatingMenu
+                  editor={editor}
+                  tippyOptions={{
+                    duration: 150,
+                    placement: 'left',
+                    offset: [0, 14],
+                    popperOptions: {
+                      modifiers: [
+                        {
+                          name: 'preventOverflow',
+                          options: {
+                            padding: 12,
+                            boundary: 'clippingParents',
+                          },
+                        },
+                      ],
+                    },
+                  }}
+                  className="flex flex-col items-center gap-1.5 select-none z-40 bg-sand/80 backdrop-blur-sm border border-ink/30 shadow-sm p-1 rounded-md"
+                >
+                  {/* Photo Icon (Image 2) */}
+                  <button
+                    type="button"
+                    onClick={() => inlineImageInputRef.current?.click()}
+                    disabled={uploadingImage}
+                    className="w-7 h-7 rounded hover:bg-ink/10 flex items-center justify-center text-ink/65 hover:text-ink transition-colors cursor-pointer"
+                    title="Insert Photo"
+                  >
+                    <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24">
+                      <path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z" />
+                    </svg>
+                  </button>
+
+                  {/* Video Icon (Image 2) */}
+                  <button
+                    type="button"
+                    onClick={() => setIsVideoModalOpen(true)}
+                    className="w-7 h-7 rounded hover:bg-ink/10 flex items-center justify-center text-ink/65 hover:text-ink transition-colors cursor-pointer"
+                    title="Insert Video"
+                  >
+                    <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24">
+                      <path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z" />
+                    </svg>
+                  </button>
+                </FloatingMenu>
+              )}
+
+              {/* Hidden File Picker for inline photo upload */}
+              <input
+                ref={inlineImageInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleInsertImage}
+                disabled={uploadingImage}
+                className="hidden"
+              />
+
+              {/* TipTap Editor Content */}
+              <EditorContent editor={editor} />
+            </div>
           </div>
         </div>
 
@@ -673,6 +1051,39 @@ export const WritingStudio: React.FC = () => {
               onChange={(e) => setVideoInputUrl(e.target.value)}
               autoFocus
             />
+          </div>
+        </Modal>
+
+        {/* Delete Chapter Modal */}
+        <Modal
+          isOpen={isDeleteModalOpen}
+          onClose={() => setIsDeleteModalOpen(false)}
+          title="CONFIRM DELETION"
+        >
+          <div className="space-y-4">
+            <p className="font-grotesk text-sm text-ink">
+              Are you sure you want to permanently delete{' '}
+              <strong>Chapter {chapterNumber}: "{title || 'Untitled'}"</strong>?
+              This action cannot be undone.
+            </p>
+            <div className="flex items-center justify-end gap-3 pt-4 border-t-2 border-ink">
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={() => setIsDeleteModalOpen(false)}
+                disabled={deleting}
+              >
+                CANCEL
+              </Button>
+              <Button
+                variant="danger"
+                size="sm"
+                onClick={handleDeleteChapter}
+                loading={deleting}
+              >
+                DELETE PERMANENTLY
+              </Button>
+            </div>
           </div>
         </Modal>
       </div>

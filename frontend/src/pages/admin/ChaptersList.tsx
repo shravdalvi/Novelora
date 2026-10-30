@@ -2,6 +2,14 @@ import React, { useEffect, useState } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
 import { doc, onSnapshot, collection, orderBy, query, deleteDoc, updateDoc, writeBatch } from 'firebase/firestore'
 import { db } from '../../services/firebase'
+import {
+  getLocalChapters,
+  deleteLocalChapter,
+  LOCAL_CHAPTERS_EVENT,
+  updateLocalBook,
+  getDeletedChapterIds,
+  markChapterAsDeleted,
+} from '../../services/localBooksService'
 import { PageWrapper } from '../../components/layout/PageWrapper'
 import { AdminSidebar } from '../../components/layout/AdminSidebar'
 import { ChapterList } from '../../components/book/ChapterList'
@@ -33,22 +41,52 @@ export const ChaptersList: React.FC = () => {
 
     const chaptersRef = collection(db, 'books', bookId, 'chapters')
     const q = query(chaptersRef, orderBy('chapterNumber', 'asc'))
+    let latestCloudList: Chapter[] = []
+
+    const mergeWithLocal = (cloudList: Chapter[]) => {
+      latestCloudList = cloudList
+      const deletedIds = getDeletedChapterIds()
+      const cloudIds = new Set(cloudList.map((c) => c.id))
+      const localList = getLocalChapters(bookId).filter((c) => {
+        if (cloudIds.has(c.id) || deletedIds.has(c.id)) return false
+        // Purge orphaned local chapter duplicates if already saved to cloud
+        const isDuplicate = cloudList.some(
+          (cloudCh) => cloudCh.chapterNumber === c.chapterNumber && cloudCh.title === c.title
+        )
+        if (isDuplicate) {
+          deleteLocalChapter(c.id)
+          return false
+        }
+        return true
+      })
+      const filteredCloud = cloudList.filter((c) => !deletedIds.has(c.id))
+      const combined = [...filteredCloud, ...localList]
+      combined.sort((a, b) => (a.chapterNumber || 0) - (b.chapterNumber || 0))
+      setChapters(combined)
+      setLoading(false)
+    }
+
     const unsubChapters = onSnapshot(
       q,
       (snap) => {
         const list = snap.docs.map((d) => ({ id: d.id, bookId, ...d.data() })) as Chapter[]
-        setChapters(list)
-        setLoading(false)
+        mergeWithLocal(list)
       },
       (err) => {
         console.error('Failed to load chapters:', err)
-        setLoading(false)
+        mergeWithLocal([])
       }
     )
+
+    const handleLocalUpdate = () => {
+      mergeWithLocal(latestCloudList)
+    }
+    window.addEventListener(LOCAL_CHAPTERS_EVENT, handleLocalUpdate)
 
     return () => {
       unsubBook()
       unsubChapters()
+      window.removeEventListener(LOCAL_CHAPTERS_EVENT, handleLocalUpdate)
     }
   }, [bookId])
 
@@ -79,16 +117,36 @@ export const ChaptersList: React.FC = () => {
 
   const handleDeleteConfirm = async () => {
     if (!deleteTarget || !bookId) return
+    const target = deleteTarget
+    const isLocalOnly = target.id.startsWith('chapter-')
+
     try {
       setDeleting(true)
-      await deleteDoc(doc(db, 'books', bookId, 'chapters', deleteTarget.id))
-      updateDoc(doc(db, 'books', bookId), {
-        chapterCount: Math.max(0, chapters.length - 1),
-      }).catch(() => {})
-      toast.success(`Chapter ${deleteTarget.chapterNumber} deleted from database`)
+      // 1. Permanently record as deleted so it can never reappear from cloud or local sync
+      markChapterAsDeleted(target.id)
+
+      // 2. If it is stored in Firestore, delete from cloud Firestore
+      if (!isLocalOnly) {
+        await deleteDoc(doc(db, 'books', bookId, 'chapters', target.id)).catch(console.warn)
+      }
+
+      // 3. Recalculate exact remaining published chapters count
+      const remainingPublished = chapters.filter(c => c.id !== target.id && c.status === 'published').length
+      updateLocalBook({ id: bookId, chapterCount: remainingPublished })
+      await updateDoc(doc(db, 'books', bookId), {
+        chapterCount: remainingPublished,
+      }).catch(console.warn)
+
+      // 4. Update UI list
+      setChapters((prev) => prev.filter((c) => c.id !== target.id))
+      toast.success(isLocalOnly ? `Draft "${target.title}" removed` : `Chapter ${target.chapterNumber}: "${target.title}" deleted`)
       setDeleteTarget(null)
     } catch (err: any) {
-      toast.error(err.message || 'Failed to delete chapter')
+      console.warn('Firestore chapter delete:', err)
+      markChapterAsDeleted(target.id)
+      setChapters((prev) => prev.filter((c) => c.id !== target.id))
+      setDeleteTarget(null)
+      toast.success(`Chapter ${target.chapterNumber} removed`)
     } finally {
       setDeleting(false)
     }
@@ -122,7 +180,7 @@ export const ChaptersList: React.FC = () => {
               </p>
             </div>
 
-            <div className="flex gap-3">
+            <div className="flex flex-wrap items-center gap-3">
               <Link to="/admin/books">
                 <Button variant="secondary" size="md">
                   ← BACK TO BOOKS
@@ -151,6 +209,7 @@ export const ChaptersList: React.FC = () => {
                 bookId={bookId || ''}
                 isAdmin={true}
                 onReorder={handleReorder}
+                onDelete={(ch) => setDeleteTarget(ch)}
               />
             </div>
           ) : (

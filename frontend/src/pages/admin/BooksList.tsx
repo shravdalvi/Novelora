@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { collection, onSnapshot, deleteDoc, doc } from 'firebase/firestore'
+import { collection, onSnapshot, deleteDoc, doc, updateDoc } from 'firebase/firestore'
 import { db } from '../../services/firebase'
 import { PageWrapper } from '../../components/layout/PageWrapper'
 import { AdminSidebar } from '../../components/layout/AdminSidebar'
@@ -8,7 +8,13 @@ import { Button } from '../../components/ui/Button'
 import { Badge } from '../../components/ui/Badge'
 import { Modal } from '../../components/ui/Modal'
 import { toast } from '../../components/ui/Toast'
-import { getLocalBooks, deleteLocalBook } from '../../services/localBooksService'
+import {
+  getLocalBooks,
+  deleteLocalBook,
+  updateLocalBook,
+  getLocalChapters,
+  LOCAL_CHAPTERS_EVENT,
+} from '../../services/localBooksService'
 import type { Book } from '../../types'
 
 export const BooksList: React.FC = () => {
@@ -16,6 +22,7 @@ export const BooksList: React.FC = () => {
   const [loading, setLoading] = useState(true)
   const [deleteTarget, setDeleteTarget] = useState<Book | null>(null)
   const [deleting, setDeleting] = useState(false)
+  const [chapterCounts, setChapterCounts] = useState<Record<string, number>>({})
 
   useEffect(() => {
     setLoading(true)
@@ -30,9 +37,18 @@ export const BooksList: React.FC = () => {
       collection(db, 'books'),
       (snap) => {
         const cloudList = snap.docs.map((d) => ({ id: d.id, ...d.data() })) as Book[]
+        const localBooks = getLocalBooks()
+        const localMap = new Map(localBooks.map((b) => [b.id, b]))
+        const merged = cloudList.map((cb) => {
+          const lb = localMap.get(cb.id)
+          if (lb) {
+            return { ...cb, ...lb }
+          }
+          return cb
+        })
         const cloudIds = new Set(cloudList.map((b) => b.id))
-        const localOnly = getLocalBooks().filter((b) => !cloudIds.has(b.id))
-        setBooks([...cloudList, ...localOnly])
+        const localOnly = localBooks.filter((b) => !cloudIds.has(b.id))
+        setBooks([...merged, ...localOnly])
         setLoading(false)
       },
       (err) => {
@@ -43,6 +59,74 @@ export const BooksList: React.FC = () => {
     )
     return () => unsubscribe()
   }, [])
+
+  // Real-time chapter count subscriptions for every book
+  useEffect(() => {
+    if (books.length === 0) return
+
+    const unsubs: (() => void)[] = []
+
+    books.forEach((book) => {
+      // 1. Initial count from local storage
+      const localCount = getLocalChapters(book.id).length
+      setChapterCounts((prev) => ({
+        ...prev,
+        [book.id]: Math.max(prev[book.id] || 0, localCount, book.chapterCount || 0),
+      }))
+
+      // 2. Real-time Firestore onSnapshot for each book's chapters subcollection
+      const chaptersRef = collection(db, 'books', book.id, 'chapters')
+      const unsub = onSnapshot(
+        chaptersRef,
+        (snap) => {
+          const cloudIds = new Set(snap.docs.map((d) => d.id))
+          const localOnly = getLocalChapters(book.id).filter((c) => !cloudIds.has(c.id))
+          const exactTotal = snap.docs.length + localOnly.length
+
+          setChapterCounts((prev) => ({
+            ...prev,
+            [book.id]: exactTotal,
+          }))
+
+          // Also keep local book copy and cloud doc synced if count differs
+          if (book.chapterCount !== exactTotal) {
+            updateLocalBook({ id: book.id, chapterCount: exactTotal })
+            updateDoc(doc(db, 'books', book.id), { chapterCount: exactTotal }).catch(() => {})
+          }
+        },
+        (err) => {
+          console.warn(`Chapters listener for book ${book.id}:`, err)
+          const fallbackCount = getLocalChapters(book.id).length || book.chapterCount || 0
+          setChapterCounts((prev) => ({
+            ...prev,
+            [book.id]: fallbackCount,
+          }))
+        }
+      )
+
+      unsubs.push(unsub)
+    })
+
+    // Listen to local chapters update event
+    const handleLocalChaptersUpdate = () => {
+      setChapterCounts((prev) => {
+        const next = { ...prev }
+        books.forEach((b) => {
+          const lCount = getLocalChapters(b.id).length
+          if (lCount > (next[b.id] || 0)) {
+            next[b.id] = lCount
+          }
+        })
+        return next
+      })
+    }
+    window.addEventListener(LOCAL_CHAPTERS_EVENT, handleLocalChaptersUpdate)
+
+    return () => {
+      unsubs.forEach((u) => u())
+      window.removeEventListener(LOCAL_CHAPTERS_EVENT, handleLocalChaptersUpdate)
+    }
+  }, [books.map((b) => b.id).join(',')])
 
   const handleDeleteConfirm = async () => {
     if (!deleteTarget) return
@@ -135,7 +219,7 @@ export const BooksList: React.FC = () => {
                       </div>
 
                       <p className="font-grotesk text-xs text-muted">
-                        Slug: /{book.slug} • {book.chapterCount || 0} Chapters
+                        Slug: /{book.slug} • {chapterCounts[book.id] ?? book.chapterCount ?? 0} Chapters
                       </p>
 
                       <div className="flex flex-wrap gap-1 pt-1">
@@ -155,7 +239,7 @@ export const BooksList: React.FC = () => {
                   <div className="flex flex-wrap items-center gap-3">
                     <Link to={`/admin/books/${book.id}/chapters`}>
                       <Button variant="secondary" size="sm">
-                        CHAPTERS ({book.chapterCount || 0})
+                        CHAPTERS ({chapterCounts[book.id] ?? book.chapterCount ?? 0})
                       </Button>
                     </Link>
                     <Link to={`/admin/books/${book.id}/edit`}>
