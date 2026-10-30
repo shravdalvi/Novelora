@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { collection, onSnapshot, deleteDoc, doc } from 'firebase/firestore'
 import { db } from '../../services/firebase'
-import { adminDeleteBook } from '../../services/functionsService'
 import { PageWrapper } from '../../components/layout/PageWrapper'
 import { AdminSidebar } from '../../components/layout/AdminSidebar'
 import { Button } from '../../components/ui/Button'
@@ -49,21 +48,15 @@ export const BooksList: React.FC = () => {
     if (!deleteTarget) return
     try {
       setDeleting(true)
-      try {
-        await adminDeleteBook(deleteTarget.id)
-      } catch {
-        // Fallback direct delete
-        await deleteDoc(doc(db, 'books', deleteTarget.id))
-      }
+      await deleteDoc(doc(db, 'books', deleteTarget.id))
       deleteLocalBook(deleteTarget.id)
       setBooks((prev) => prev.filter((b) => b.id !== deleteTarget.id))
-      toast.success(`Book "${deleteTarget.title}" deleted`)
+      toast.success(`Book "${deleteTarget.title}" deleted from database`)
       setDeleteTarget(null)
     } catch (err: any) {
-      // Even if cloud delete fails, clean up local
       deleteLocalBook(deleteTarget.id)
       setBooks((prev) => prev.filter((b) => b.id !== deleteTarget.id))
-      toast.success(`Book "${deleteTarget.title}" removed`)
+      toast.error(err.message || 'Failed to delete book')
       setDeleteTarget(null)
     } finally {
       setDeleting(false)

@@ -1,19 +1,20 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { useParams, useSearchParams, useNavigate, Link } from 'react-router-dom'
-import { useEditor, EditorContent } from '@tiptap/react'
+import { useEditor, EditorContent, BubbleMenu, FloatingMenu } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
 import Image from '@tiptap/extension-image'
 import Underline from '@tiptap/extension-underline'
 import TextAlign from '@tiptap/extension-text-align'
-import { doc, getDoc, setDoc, addDoc, collection, serverTimestamp } from 'firebase/firestore'
+import { VideoExtension } from '../../utils/tiptapVideo'
+import { doc, getDoc, setDoc, addDoc, collection, serverTimestamp, updateDoc, increment } from 'firebase/firestore'
 import { db } from '../../services/firebase'
-import { adminCreateChapter, adminUpdateChapter } from '../../services/functionsService'
 import { uploadChapterImage } from '../../services/uploadService'
 import { useAutoSave } from '../../hooks/useAutoSave'
 import { PageWrapper } from '../../components/layout/PageWrapper'
 import { Button } from '../../components/ui/Button'
 import { Input } from '../../components/ui/Input'
 import { Select } from '../../components/ui/Select'
+import { Modal } from '../../components/ui/Modal'
 import { toast } from '../../components/ui/Toast'
 import type { Chapter, ChapterStatus } from '../../types'
 
@@ -36,6 +37,13 @@ export const WritingStudio: React.FC = () => {
   const [fetching, setFetching] = useState(!isNew)
   const [uploadingImage, setUploadingImage] = useState(false)
 
+  // Chapter Header Media (Photo & Video like Wattpad)
+  const [headerImageUrl, setHeaderImageUrl] = useState<string>('')
+  const [headerVideoUrl, setHeaderVideoUrl] = useState<string>('')
+  const [isVideoModalOpen, setIsVideoModalOpen] = useState(false)
+  const [videoInputUrl, setVideoInputUrl] = useState('')
+  const inlineImageInputRef = useRef<HTMLInputElement>(null)
+
   const currentChapterIdRef = useRef(id)
 
   const editor = useEditor({
@@ -47,11 +55,17 @@ export const WritingStudio: React.FC = () => {
         inline: false,
         allowBase64: true,
       }),
+      VideoExtension,
       Underline,
       TextAlign.configure({
         types: ['heading', 'paragraph'],
       }),
     ],
+    editorProps: {
+      attributes: {
+        class: 'focus:outline-none max-w-none min-h-[500px]',
+      },
+    },
     content: '<p>Start writing your chapter here...</p>',
     onUpdate: ({ editor: ed }) => {
       // Calculate word count
@@ -77,6 +91,8 @@ export const WritingStudio: React.FC = () => {
           setChapterNumber(data.chapterNumber || 1)
           setStatus(data.status || 'draft')
           setWordCount(data.wordCount || 0)
+          setHeaderImageUrl(data.headerImageUrl || '')
+          setHeaderVideoUrl(data.headerVideoUrl || '')
 
           if (editor && data.content) {
             editor.commands.setContent(data.content)
@@ -111,6 +127,8 @@ export const WritingStudio: React.FC = () => {
       title: title.trim() || `Chapter ${chapterNumber}`,
       chapterNumber,
       content: contentJson,
+      headerImageUrl: headerImageUrl.trim() || '',
+      headerVideoUrl: headerVideoUrl.trim() || '',
       overlayOpacity: 0.3,
       status: finalStatus,
       wordCount: calculatedWords,
@@ -118,12 +136,6 @@ export const WritingStudio: React.FC = () => {
 
     if (currentChapterIdRef.current === 'new') {
       try {
-        const res = await adminCreateChapter(payload)
-        currentChapterIdRef.current = res.id
-        toast.success('Chapter saved!')
-        navigate(`/admin/chapters/${res.id}/edit?bookId=${bookId}`, { replace: true })
-      } catch {
-        // Direct fallback
         const docRef = await addDoc(
           collection(db, 'books', bookId, 'chapters'),
           {
@@ -134,15 +146,21 @@ export const WritingStudio: React.FC = () => {
           }
         )
         currentChapterIdRef.current = docRef.id
-        toast.success('Chapter created!')
+        if (finalStatus === 'published') {
+          await updateDoc(doc(db, 'books', bookId), {
+            chapterCount: increment(1),
+            updatedAt: serverTimestamp(),
+          }).catch(console.warn)
+        }
+        toast.success(finalStatus === 'published' ? 'Chapter published to database!' : 'Chapter created!')
         navigate(`/admin/chapters/${docRef.id}/edit?bookId=${bookId}`, { replace: true })
+      } catch (err: any) {
+        console.error('Failed to create chapter in Firestore:', err)
+        toast.error(err.message || 'Failed to save chapter to database')
       }
     } else {
       const chapterId = currentChapterIdRef.current!
       try {
-        await adminUpdateChapter({ id: chapterId, ...payload })
-      } catch {
-        // Direct fallback
         await setDoc(
           doc(db, 'books', bookId, 'chapters', chapterId),
           {
@@ -151,6 +169,10 @@ export const WritingStudio: React.FC = () => {
           },
           { merge: true }
         )
+        toast.success(finalStatus === 'published' ? 'Chapter published to database!' : 'Draft saved to database!')
+      } catch (err: any) {
+        console.error('Failed to update chapter in Firestore:', err)
+        toast.error(err.message || 'Failed to update chapter in database')
       }
     }
   }
@@ -160,6 +182,8 @@ export const WritingStudio: React.FC = () => {
     title,
     chapterNumber,
     status,
+    headerImageUrl,
+    headerVideoUrl,
     content: editor?.getJSON(),
   }
 
@@ -168,6 +192,18 @@ export const WritingStudio: React.FC = () => {
     () => handleSave(),
     5000
   )
+
+  const handleSaveVideoUrl = () => {
+    if (!videoInputUrl.trim() || !editor) {
+      toast.error('Please enter a video URL')
+      return
+    }
+    const cleanUrl = videoInputUrl.trim()
+    editor.chain().focus().setVideo({ src: cleanUrl }).run()
+    setIsVideoModalOpen(false)
+    setVideoInputUrl('')
+    toast.success('Video inserted into chapter!')
+  }
 
   const handleInsertImage = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -455,11 +491,190 @@ export const WritingStudio: React.FC = () => {
             </div>
           )}
 
+          {/* Floating Bubble Menu on text selection (Image 1) */}
+          {editor && (
+            <BubbleMenu
+              editor={editor}
+              tippyOptions={{
+                duration: 150,
+                placement: 'top',
+                offset: [0, 10],
+              }}
+              className="relative flex items-center bg-[#282726] border-2 border-ink rounded-lg shadow-2xl p-1.5 gap-1 z-50 text-bone select-none"
+            >
+              {/* Bold */}
+              <button
+                type="button"
+                onClick={() => editor.chain().focus().toggleBold().run()}
+                className={`w-8 h-8 rounded flex items-center justify-center font-bold text-base transition-colors ${
+                  editor.isActive('bold')
+                    ? 'bg-[#00a8a8] text-white shadow-sm'
+                    : 'text-[#00c4c4] hover:bg-white/10'
+                }`}
+                title="Bold"
+              >
+                B
+              </button>
+
+              {/* Italic */}
+              <button
+                type="button"
+                onClick={() => editor.chain().focus().toggleItalic().run()}
+                className={`w-8 h-8 rounded flex items-center justify-center italic font-serif font-bold text-base transition-colors ${
+                  editor.isActive('italic')
+                    ? 'bg-[#00a8a8] text-white shadow-sm'
+                    : 'text-[#00c4c4] hover:bg-white/10'
+                }`}
+                title="Italic"
+              >
+                I
+              </button>
+
+              {/* Underline */}
+              <button
+                type="button"
+                onClick={() => editor.chain().focus().toggleUnderline().run()}
+                className={`w-8 h-8 rounded flex items-center justify-center underline font-bold text-base transition-colors ${
+                  editor.isActive('underline')
+                    ? 'bg-[#00a8a8] text-white shadow-sm'
+                    : 'text-[#00c4c4] hover:bg-white/10'
+                }`}
+                title="Underline"
+              >
+                U
+              </button>
+
+              <div className="w-[1.5px] h-5 bg-white/20 mx-1" />
+
+              {/* Align Left */}
+              <button
+                type="button"
+                onClick={() => editor.chain().focus().setTextAlign('left').run()}
+                className={`w-8 h-8 rounded flex items-center justify-center transition-colors ${
+                  editor.isActive({ textAlign: 'left' })
+                    ? 'bg-[#00a8a8] text-white shadow-sm'
+                    : 'text-[#00c4c4] hover:bg-white/10'
+                }`}
+                title="Align Left"
+              >
+                <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
+                  <path d="M3 5h18v2H3V5zm0 4h12v2H3V9zm0 4h18v2H3v-2zm0 4h12v2H3v-2z" />
+                </svg>
+              </button>
+
+              {/* Align Center */}
+              <button
+                type="button"
+                onClick={() => editor.chain().focus().setTextAlign('center').run()}
+                className={`w-8 h-8 rounded flex items-center justify-center transition-colors ${
+                  editor.isActive({ textAlign: 'center' })
+                    ? 'bg-[#00a8a8] text-white shadow-sm'
+                    : 'text-[#00c4c4] hover:bg-white/10'
+                }`}
+                title="Align Center"
+              >
+                <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
+                  <path d="M3 5h18v2H3V5zm3 4h12v2H6V9zm-3 4h18v2H3v-2zm3 4h12v2H6v-2z" />
+                </svg>
+              </button>
+
+              {/* Align Right */}
+              <button
+                type="button"
+                onClick={() => editor.chain().focus().setTextAlign('right').run()}
+                className={`w-8 h-8 rounded flex items-center justify-center transition-colors ${
+                  editor.isActive({ textAlign: 'right' })
+                    ? 'bg-[#00a8a8] text-white shadow-sm'
+                    : 'text-[#00c4c4] hover:bg-white/10'
+                }`}
+                title="Align Right"
+              >
+                <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
+                  <path d="M3 5h18v2H3V5zm6 4h12v2H9V9zm-6 4h18v2H3v-2zm6 4h12v2H9v-2z" />
+                </svg>
+              </button>
+
+              {/* Downward indicator arrow */}
+              <div className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-3 h-3 bg-[#282726] rotate-45 border-r-2 border-b-2 border-ink pointer-events-none" />
+            </BubbleMenu>
+          )}
+
           {/* Manuscript Canvas */}
-          <div className="bg-parchment border-3 border-ink shadow-hard-lg p-8 sm:p-12 mb-16 min-h-[600px]">
+          <div className="bg-parchment border-3 border-ink shadow-hard-lg pl-14 pr-8 py-8 sm:pl-16 sm:pr-12 sm:py-12 mb-16 min-h-[600px] relative">
+            {/* ── FLOATING MENU (Vertical column on each Enter / empty line - Image 2) ── */}
+            {editor && (
+              <FloatingMenu
+                editor={editor}
+                tippyOptions={{
+                  duration: 150,
+                  placement: 'left',
+                  offset: [0, 10],
+                }}
+                className="flex flex-col items-center gap-1.5 select-none z-40 bg-transparent py-0.5"
+              >
+                {/* Photo Icon (Image 2) */}
+                <button
+                  type="button"
+                  onClick={() => inlineImageInputRef.current?.click()}
+                  disabled={uploadingImage}
+                  className="w-7 h-7 rounded hover:bg-ink/10 flex items-center justify-center text-ink/65 hover:text-ink transition-colors cursor-pointer"
+                  title="Insert Photo"
+                >
+                  <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24">
+                    <path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z" />
+                  </svg>
+                </button>
+
+                {/* Video Icon (Image 2) */}
+                <button
+                  type="button"
+                  onClick={() => setIsVideoModalOpen(true)}
+                  className="w-7 h-7 rounded hover:bg-ink/10 flex items-center justify-center text-ink/65 hover:text-ink transition-colors cursor-pointer"
+                  title="Insert Video"
+                >
+                  <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24">
+                    <path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z" />
+                  </svg>
+                </button>
+              </FloatingMenu>
+            )}
+
+            {/* Hidden File Picker for inline photo upload */}
+            <input
+              ref={inlineImageInputRef}
+              type="file"
+              accept="image/*"
+              onChange={handleInsertImage}
+              disabled={uploadingImage}
+              className="hidden"
+            />
+
+            {/* TipTap Editor Content */}
             <EditorContent editor={editor} />
           </div>
         </div>
+
+        {/* Video URL Modal */}
+        <Modal
+          isOpen={isVideoModalOpen}
+          onClose={() => setIsVideoModalOpen(false)}
+          title="INSERT VIDEO"
+          isConfirm
+          confirmText="INSERT VIDEO"
+          onConfirm={handleSaveVideoUrl}
+        >
+          <div className="space-y-4">
+            <p className="font-grotesk text-sm">
+              Paste a YouTube video link or direct MP4 URL to insert into this chapter:
+            </p>
+            <Input
+              placeholder="e.g. https://www.youtube.com/watch?v=... or https://youtu.be/..."
+              value={videoInputUrl}
+              onChange={(e) => setVideoInputUrl(e.target.value)}
+              autoFocus
+            />
+          </div>
+        </Modal>
       </div>
     </PageWrapper>
   )

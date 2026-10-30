@@ -21,8 +21,8 @@ export const Chip: React.FC<ChipProps> = ({
       className={clsx(
         'inline-flex items-center justify-center px-3.5 py-1 text-sm font-grotesk font-bold border-2 border-ink shadow-hard-sm transition-all duration-100 cursor-pointer select-none active:translate-x-0.5 active:translate-y-0.5 active:shadow-none',
         selected
-          ? 'bg-sage text-bone'
-          : 'bg-bone text-ink hover:bg-sage/30',
+          ? 'bg-bordeaux text-bone'
+          : 'bg-bone text-ink hover:bg-bordeaux/20',
         className
       )}
     >

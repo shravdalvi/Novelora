@@ -3,10 +3,10 @@ import { Link } from 'react-router-dom'
 import { PageWrapper } from '../../components/layout/PageWrapper'
 import { AdminSidebar } from '../../components/layout/AdminSidebar'
 import { Button } from '../../components/ui/Button'
-import { adminGetStats } from '../../services/functionsService'
-import { collection, getDocs } from 'firebase/firestore'
+import { collection, collectionGroup, onSnapshot, query } from 'firebase/firestore'
 import { db } from '../../services/firebase'
-import type { AdminStats } from '../../types'
+import { getLocalBooks, LOCAL_BOOKS_EVENT } from '../../services/localBooksService'
+import type { AdminStats, Book, Chapter } from '../../types'
 
 export const Dashboard: React.FC = () => {
   const [stats, setStats] = useState<AdminStats>({
@@ -20,40 +20,95 @@ export const Dashboard: React.FC = () => {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    async function loadStats() {
-      try {
-        // Try calling cloud function, fallback to client counts if emulator/local
-        try {
-          const res = await adminGetStats()
-          setStats(res)
-        } catch {
-          // Local fallback Firestore queries
-          const booksSnap = await getDocs(collection(db, 'books'))
-          const totalBooks = booksSnap.size
-          setStats({
-            totalBooks,
-            totalChapters: 0,
-            totalDrafts: 0,
-            totalPublished: totalBooks,
-            totalReads: 0,
-            recentComments: [],
-          })
-        }
-      } catch (err) {
-        console.error('Failed to load stats:', err)
-      } finally {
-        setLoading(false)
-      }
+    let cloudBooks: Book[] = []
+    let cloudChapters: Chapter[] = []
+
+    const recalculateStats = () => {
+      // Merge Firestore cloud books with any local storage books
+      const cloudIds = new Set(cloudBooks.map((b) => b.id))
+      const localOnlyBooks = getLocalBooks().filter((b) => !cloudIds.has(b.id))
+      const allBooks = [...cloudBooks, ...localOnlyBooks]
+
+      const totalBooks = allBooks.length
+      const publishedBooks = allBooks.filter((b) => b.visibility === 'published').length
+      const draftBooks = allBooks.filter((b) => b.visibility !== 'published').length
+
+      // Count chapters & drafts
+      const totalChapters = cloudChapters.length
+      const draftChapters = cloudChapters.filter((c) => c.status !== 'published').length
+
+      // Total drafts include both unpublished books and unpublished chapters
+      const totalDrafts = draftBooks + draftChapters
+      const totalPublished = publishedBooks + (totalChapters - draftChapters)
+
+      setStats({
+        totalBooks,
+        totalChapters,
+        totalDrafts,
+        totalPublished,
+        totalReads: 0,
+        recentComments: [],
+      })
+      setLoading(false)
     }
 
-    loadStats()
+    // 1. Initial calculation from local storage right away
+    recalculateStats()
+
+    // 2. Real-time listener on the 'books' collection
+    const booksQuery = query(collection(db, 'books'))
+    const unsubBooks = onSnapshot(
+      booksQuery,
+      (snapshot) => {
+        cloudBooks = snapshot.docs.map((d) => ({
+          id: d.id,
+          ...d.data(),
+        })) as Book[]
+        recalculateStats()
+      },
+      (err) => {
+        console.warn('Realtime books listener error:', err)
+        recalculateStats()
+      }
+    )
+
+    // 3. Real-time listener on all 'chapters' across all books via collectionGroup
+    const chaptersQuery = query(collectionGroup(db, 'chapters'))
+    const unsubChapters = onSnapshot(
+      chaptersQuery,
+      (snapshot) => {
+        cloudChapters = snapshot.docs.map((d) => ({
+          id: d.id,
+          ...d.data(),
+        })) as Chapter[]
+        recalculateStats()
+      },
+      (err) => {
+        console.warn('Realtime chapters listener error:', err)
+        recalculateStats()
+      }
+    )
+
+    // 4. Local storage event listener (for offline/instant local book changes)
+    const handleLocalUpdate = () => {
+      recalculateStats()
+    }
+    window.addEventListener(LOCAL_BOOKS_EVENT, handleLocalUpdate)
+    window.addEventListener('storage', handleLocalUpdate)
+
+    return () => {
+      unsubBooks()
+      unsubChapters()
+      window.removeEventListener(LOCAL_BOOKS_EVENT, handleLocalUpdate)
+      window.removeEventListener('storage', handleLocalUpdate)
+    }
   }, [])
 
   const statCards = [
-    { label: 'TOTAL BOOKS', value: stats.totalBooks, color: 'bg-sage' },
-    { label: 'TOTAL CHAPTERS', value: stats.totalChapters, color: 'bg-deep-sky text-white' },
-    { label: 'PUBLISHED RELEASES', value: stats.totalPublished, color: 'bg-cedar/40' },
-    { label: 'ACTIVE DRAFTS', value: stats.totalDrafts, color: 'bg-aurora-pink' },
+    { label: 'TOTAL BOOKS', value: stats.totalBooks, bg: '#4A1A23', text: '#D8D0C2' },       // Bordeaux
+    { label: 'TOTAL CHAPTERS', value: stats.totalChapters, bg: '#6A7657', text: '#D8D0C2' },   // Sage
+    { label: 'PUBLISHED RELEASES', value: stats.totalPublished, bg: '#EDE8DF', text: '#1A1A1A' }, // Bone / Parchment
+    { label: 'ACTIVE DRAFTS', value: stats.totalDrafts, bg: '#8C603E', text: '#D8D0C2' },       // Cedar
   ]
 
   return (
@@ -65,11 +120,6 @@ export const Dashboard: React.FC = () => {
           {/* Header */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b-3 border-ink pb-6">
             <div>
-              <div className="inline-block bg-sage border-3 border-ink px-3 py-1 shadow-hard-sm mb-2">
-                <span className="font-bangers text-sm tracking-comic text-ink">
-                  COMMAND CENTER
-                </span>
-              </div>
               <h1 className="font-bangers text-4xl sm:text-5xl tracking-comic text-ink">
                 AUTHOR DASHBOARD
               </h1>
@@ -89,12 +139,19 @@ export const Dashboard: React.FC = () => {
             {statCards.map((card) => (
               <div
                 key={card.label}
-                className={`border-3 border-ink p-6 shadow-hard ${card.color} flex flex-col justify-between`}
+                className="border-3 border-ink p-6 shadow-hard flex flex-col justify-between transition-transform hover:-translate-y-0.5"
+                style={{ backgroundColor: card.bg, color: card.text }}
               >
-                <span className="font-bangers text-sm sm:text-base tracking-comic text-ink mb-2">
+                <span
+                  className="font-bangers text-sm sm:text-base tracking-comic mb-2"
+                  style={{ color: card.text }}
+                >
                   {card.label}
                 </span>
-                <span className="font-bangers text-4xl sm:text-5xl text-ink">
+                <span
+                  className="font-bangers text-4xl sm:text-5xl"
+                  style={{ color: card.text }}
+                >
                   {loading ? '...' : card.value}
                 </span>
               </div>

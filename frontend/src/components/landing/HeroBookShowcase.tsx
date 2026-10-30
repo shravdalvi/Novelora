@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
+import { collection, onSnapshot } from 'firebase/firestore'
+import { db } from '../../services/firebase'
 import { subscribeToPublishedBooks } from '../../services/bookService'
 import { getLocalBooks } from '../../services/localBooksService'
 
@@ -23,7 +25,7 @@ const DEFAULT_AUTHOR_BOOKS: ShowcaseBook[] = [
     coverImageUrl: 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=600&auto=format&fit=crop&q=80',
     description: 'A fiercely independent editor clashes with an enigmatic, ruthless media mogul who hides an ancient secret behind his boardroom power.',
     genres: ['Romance', 'Drama', 'Mystery'],
-    chapterCount: 18,
+    chapterCount: 0,
     status: 'ongoing',
   },
   {
@@ -33,7 +35,7 @@ const DEFAULT_AUTHOR_BOOKS: ShowcaseBook[] = [
     coverImageUrl: 'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=600&auto=format&fit=crop&q=80',
     description: 'In an ancient world where basalt spires pierce storm-torn skies, an outcast cartographer uncovers an obsidian monolith that whispers forbidden arcana.',
     genres: ['Fantasy', 'Adventure'],
-    chapterCount: 24,
+    chapterCount: 0,
     status: 'ongoing',
   },
   {
@@ -43,7 +45,7 @@ const DEFAULT_AUTHOR_BOOKS: ShowcaseBook[] = [
     coverImageUrl: 'https://images.unsplash.com/photo-1509198397868-475647b2a1e5?w=600&auto=format&fit=crop&q=80',
     description: 'An inherited Gothic estate holds locked archives and century-old secrets waiting behind velvet curtains.',
     genres: ['Mystery', 'Thriller'],
-    chapterCount: 16,
+    chapterCount: 0,
     status: 'completed',
   },
 ]
@@ -83,6 +85,39 @@ export const HeroBookShowcase: React.FC = () => {
 
   const activeBooks = books.length > 0 ? books : DEFAULT_AUTHOR_BOOKS
   const currentBook = activeBooks[currentIndex % activeBooks.length]
+
+  // Real-time chapter listener for the active showcase book
+  const [liveChapterCount, setLiveChapterCount] = useState<number | null>(null)
+
+  useEffect(() => {
+    if (!currentBook?.id) {
+      setLiveChapterCount(null)
+      return
+    }
+
+    setLiveChapterCount(currentBook.chapterCount ?? 0)
+
+    try {
+      const chaptersRef = collection(db, 'books', currentBook.id, 'chapters')
+      const unsub = onSnapshot(
+        chaptersRef,
+        (snap) => {
+          const publishedChapters = snap.docs.filter((d) => d.data().status === 'published')
+          setLiveChapterCount(publishedChapters.length)
+        },
+        (err) => {
+          console.warn('Real-time chapters check fallback:', err)
+          setLiveChapterCount(currentBook.chapterCount ?? 0)
+        }
+      )
+      return () => unsub()
+    } catch {
+      setLiveChapterCount(currentBook.chapterCount ?? 0)
+    }
+  }, [currentBook?.id, currentBook?.chapterCount])
+
+  const displayChapterCount =
+    liveChapterCount !== null ? liveChapterCount : (currentBook.chapterCount ?? 0)
 
   // Auto-slide every 5.5s when not hovered or flipped
   useEffect(() => {
@@ -156,7 +191,7 @@ export const HeroBookShowcase: React.FC = () => {
                 className="font-bangers text-xs px-2 py-0.5 border-2 border-ink shadow-hard-sm"
                 style={{ backgroundColor: '#233126', color: '#D8D0C2' }}
               >
-                {currentBook.chapterCount || 1} CHS
+                {displayChapterCount} CHS
               </span>
             </div>
 
@@ -253,11 +288,11 @@ export const HeroBookShowcase: React.FC = () => {
 
             <div className="space-y-2 pt-2 border-t border-bone/20" onClick={(e) => e.stopPropagation()}>
               <Link
-                to={`/book/${currentBook.slug}`}
+                to={displayChapterCount > 0 ? `/read/${currentBook.slug}/1` : `/book/${currentBook.slug}`}
                 className="w-full block text-center py-2.5 font-bangers text-base tracking-comic border-3 border-ink shadow-hard transition-all hover:-translate-x-0.5 hover:-translate-y-0.5 cursor-pointer"
                 style={{ backgroundColor: '#8C603E', color: '#FFFFFF' }}
               >
-                START READING CHAPTER 1 →
+                {displayChapterCount > 0 ? 'START READING CHAPTER 1 →' : 'EXPLORE STORY DETAILS →'}
               </Link>
               <div className="text-center">
                 <button

@@ -78,7 +78,7 @@ export const Navbar: React.FC = () => {
                 <span
                   className="inline-flex items-center justify-center font-bangers text-sm uppercase tracking-comic px-3.5 py-1.5 border-2 cursor-pointer transition-colors hover:opacity-90"
                   style={{
-                    backgroundColor: '#6A7657',
+                    backgroundColor: '#8C603E',
                     borderColor: '#D8D0C2',
                     color: '#D8D0C2',
                     boxShadow: '2px 2px 0 #D8D0C2',
@@ -197,7 +197,7 @@ export const Navbar: React.FC = () => {
               <Link to="/admin">
                 <span
                   className="text-xs font-bangers px-2 py-1 border-2"
-                  style={{ backgroundColor: '#6A7657', borderColor: '#D8D0C2', color: '#D8D0C2' }}
+                  style={{ backgroundColor: '#8C603E', borderColor: '#D8D0C2', color: '#D8D0C2' }}
                 >
                   Admin
                 </span>

@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
-import { doc, onSnapshot, collection, orderBy, query, deleteDoc, updateDoc } from 'firebase/firestore'
+import { doc, onSnapshot, collection, orderBy, query, deleteDoc, updateDoc, writeBatch } from 'firebase/firestore'
 import { db } from '../../services/firebase'
-import { adminDeleteChapter, adminReorderChapters } from '../../services/functionsService'
 import { PageWrapper } from '../../components/layout/PageWrapper'
 import { AdminSidebar } from '../../components/layout/AdminSidebar'
 import { ChapterList } from '../../components/book/ChapterList'
@@ -62,21 +61,18 @@ export const ChaptersList: React.FC = () => {
     setChapters(updatedWithIndices)
 
     try {
-      const orderedIds = updatedWithIndices.map((c) => c.id)
       if (bookId) {
-        try {
-          await adminReorderChapters(bookId, orderedIds)
-        } catch {
-          // Fallback update individual documents
-          for (const ch of updatedWithIndices) {
-            await updateDoc(doc(db, 'books', bookId, 'chapters', ch.id), {
-              chapterNumber: ch.chapterNumber,
-            })
-          }
+        const batch = writeBatch(db)
+        for (const ch of updatedWithIndices) {
+          batch.update(doc(db, 'books', bookId, 'chapters', ch.id), {
+            chapterNumber: ch.chapterNumber,
+          })
         }
-        toast.success('Chapter order updated!')
+        await batch.commit()
+        toast.success('Chapter order updated in database!')
       }
     } catch (err) {
+      console.error('Failed to reorder chapters:', err)
       toast.error('Failed to save new chapter order')
     }
   }
@@ -85,13 +81,11 @@ export const ChaptersList: React.FC = () => {
     if (!deleteTarget || !bookId) return
     try {
       setDeleting(true)
-      try {
-        await adminDeleteChapter({ bookId, chapterId: deleteTarget.id })
-      } catch {
-        // Direct fallback
-        await deleteDoc(doc(db, 'books', bookId, 'chapters', deleteTarget.id))
-      }
-      toast.success(`Chapter ${deleteTarget.chapterNumber} deleted`)
+      await deleteDoc(doc(db, 'books', bookId, 'chapters', deleteTarget.id))
+      updateDoc(doc(db, 'books', bookId), {
+        chapterCount: Math.max(0, chapters.length - 1),
+      }).catch(() => {})
+      toast.success(`Chapter ${deleteTarget.chapterNumber} deleted from database`)
       setDeleteTarget(null)
     } catch (err: any) {
       toast.error(err.message || 'Failed to delete chapter')

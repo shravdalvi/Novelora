@@ -38,6 +38,8 @@ export interface Chapter {
   chapterNumber: number
   title: string
   content: any // TipTap JSON format
+  headerImageUrl?: string
+  headerVideoUrl?: string
   backgroundImageUrl?: string
   overlayOpacity: number
   status: ChapterStatus

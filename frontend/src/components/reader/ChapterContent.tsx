@@ -4,6 +4,7 @@ import StarterKit from '@tiptap/starter-kit'
 import Image from '@tiptap/extension-image'
 import Underline from '@tiptap/extension-underline'
 import TextAlign from '@tiptap/extension-text-align'
+import { VideoExtension } from '../../utils/tiptapVideo'
 import { useReaderSettings } from '../../context/ReaderSettingsContext'
 
 export interface ChapterContentProps {
@@ -54,6 +55,7 @@ export const ChapterContent: React.FC<ChapterContentProps> = ({
           inline: false,
           allowBase64: true,
         }),
+        VideoExtension,
         Underline,
         TextAlign.configure({
           types: ['heading', 'paragraph'],

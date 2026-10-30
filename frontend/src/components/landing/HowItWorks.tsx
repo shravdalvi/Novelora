@@ -37,26 +37,26 @@ export const HowItWorks: React.FC = () => {
           <div
             key={s.step}
             className="flex flex-col justify-between p-6 border-3 border-ink shadow-hard transition-all duration-150 hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-hard-lg"
-            style={{ backgroundColor: '#233126', color: '#FFFFFF' }}
+            style={{ backgroundColor: '#233126', color: '#C4B9A8' }}
           >
             <div>
               <div className="flex items-center justify-end mb-4">
                 <span
                   className="font-bangers text-4xl"
-                  style={{ color: '#FFFFFF', textShadow: '2px 2px 0 #1A1A1A' }}
+                  style={{ color: '#C4B9A8', textShadow: '2px 2px 0 #1A1A1A' }}
                 >
                   {s.step}
                 </span>
               </div>
               <h3
                 className="font-bangers text-2xl tracking-comic mb-2"
-                style={{ color: '#FFFFFF' }}
+                style={{ color: '#C4B9A8' }}
               >
                 {s.title}
               </h3>
               <p
                 className="font-grotesk text-sm leading-relaxed"
-                style={{ color: '#FFFFFF', opacity: 0.9 }}
+                style={{ color: '#C4B9A8', opacity: 0.95 }}
               >
                 {s.desc}
               </p>

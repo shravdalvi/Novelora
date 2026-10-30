@@ -40,11 +40,11 @@ export const AdminSidebar: React.FC = () => {
         )}
         style={{ backgroundColor: '#EDE8DF' }}
       >
-        <div className="p-4 border-b-3 border-ink" style={{ backgroundColor: '#233126' }}>
+        <div className="p-4 border-b-3 border-ink" style={{ backgroundColor: '#8C603E' }}>
           <h2 className="font-bangers text-2xl tracking-comic text-bone">
             WRITING DESK
           </h2>
-          <p className="font-grotesk text-xs text-bone/70 font-bold">
+          <p className="font-grotesk text-xs text-bone/90 font-bold">
             Author Administration
           </p>
         </div>

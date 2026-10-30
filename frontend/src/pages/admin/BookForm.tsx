@@ -24,8 +24,8 @@ export const BookForm: React.FC = () => {
   const [description, setDescription] = useState('')
   const [coverImageUrl, setCoverImageUrl] = useState('')
   const [localPreview, setLocalPreview] = useState<string | null>(null)
-  const [genres, setGenres] = useState('Fantasy, Adventure')
-  const [tags, setTags] = useState('Magic, Action')
+  const [genres, setGenres] = useState('')
+  const [tags, setTags] = useState('')
   const [status, setStatus] = useState<BookStatus>('ongoing')
   const [visibility, setVisibility] = useState<BookVisibility>('published')
 
@@ -142,38 +142,28 @@ export const BookForm: React.FC = () => {
     try {
       setLoading(true)
       if (isEdit && id) {
-        try {
-          await setDoc(
-            doc(db, 'books', id),
-            { ...payload, updatedAt: serverTimestamp() },
-            { merge: true }
-          )
-        } catch (cloudErr) {
-          console.warn('Direct setDoc failed, saving to local registry:', cloudErr)
-        }
+        await setDoc(
+          doc(db, 'books', id),
+          { ...payload, updatedAt: serverTimestamp() },
+          { merge: true }
+        )
         updateLocalBook({ id, ...payload })
-        toast.success('Book updated!')
+        toast.success('Book updated in database!')
       } else {
-        let newBookId = `book-${Date.now()}`
-        try {
-          const docRef = await addDoc(collection(db, 'books'), {
-            ...payload,
-            chapterCount: 0,
-            createdAt: serverTimestamp(),
-            updatedAt: serverTimestamp(),
-          })
-          newBookId = docRef.id
-        } catch (cloudErr) {
-          console.warn('Firestore addDoc failed, storing in resilient local registry:', cloudErr)
-        }
+        const docRef = await addDoc(collection(db, 'books'), {
+          ...payload,
+          chapterCount: 0,
+          createdAt: serverTimestamp(),
+          updatedAt: serverTimestamp(),
+        })
         saveLocalBook({
-          id: newBookId,
+          id: docRef.id,
           ...payload,
           chapterCount: 0,
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
         })
-        toast.success('New book created!')
+        toast.success('New book created in database!')
       }
       navigate('/admin/books')
     } catch (err: any) {

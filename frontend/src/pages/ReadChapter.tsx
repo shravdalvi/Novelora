@@ -16,6 +16,7 @@ import { useReadingProgress } from '../hooks/useReadingProgress'
 import { useReaderSettings } from '../context/ReaderSettingsContext'
 import { doc, getDoc, setDoc, deleteDoc, serverTimestamp } from 'firebase/firestore'
 import { db } from '../services/firebase'
+import { getYouTubeEmbedUrl } from '../utils/youtube'
 import type { Book, Chapter } from '../types'
 
 export const ReadChapter: React.FC = () => {
@@ -204,6 +205,37 @@ export const ReadChapter: React.FC = () => {
             </p>
           )}
         </header>
+
+        {/* Wattpad-style Header Media Banner (Photo or Video) */}
+        {chapter.headerImageUrl && (
+          <div className="mb-10 border-3 border-ink shadow-hard-lg overflow-hidden bg-sand max-h-[500px]">
+            <img
+              src={chapter.headerImageUrl}
+              alt={chapter.title}
+              className="w-full h-full object-cover"
+            />
+          </div>
+        )}
+
+        {chapter.headerVideoUrl && (
+          <div className="mb-10 border-3 border-ink shadow-hard-lg aspect-video overflow-hidden bg-black">
+            {getYouTubeEmbedUrl(chapter.headerVideoUrl) ? (
+              <iframe
+                src={getYouTubeEmbedUrl(chapter.headerVideoUrl)!}
+                title={chapter.title}
+                className="w-full h-full"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+              />
+            ) : (
+              <video
+                src={chapter.headerVideoUrl}
+                controls
+                className="w-full h-full"
+              />
+            )}
+          </div>
+        )}
 
         {/* TipTap Chapter Content */}
         <div className="min-h-[50vh]">

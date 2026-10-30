@@ -1,6 +1,7 @@
 import type { Book } from '../types'
 
 const LOCAL_BOOKS_KEY = 'novelora_local_books'
+export const LOCAL_BOOKS_EVENT = 'novelora_local_books_updated'
 
 /**
  * Retrieve all locally saved books from localStorage
@@ -26,6 +27,9 @@ export function saveLocalBook(book: Book): void {
     const filtered = existing.filter((b) => b.id !== book.id && b.slug !== book.slug)
     filtered.unshift(book)
     localStorage.setItem(LOCAL_BOOKS_KEY, JSON.stringify(filtered))
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new Event(LOCAL_BOOKS_EVENT))
+    }
   } catch (err) {
     console.error('[localBooksService] Error saving local book:', err)
   }
@@ -41,6 +45,9 @@ export function updateLocalBook(updates: Partial<Book> & { id: string }): void {
     if (index !== -1) {
       existing[index] = { ...existing[index], ...updates, updatedAt: new Date().toISOString() }
       localStorage.setItem(LOCAL_BOOKS_KEY, JSON.stringify(existing))
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new Event(LOCAL_BOOKS_EVENT))
+      }
     }
   } catch (err) {
     console.error('[localBooksService] Error updating local book:', err)
@@ -55,6 +62,9 @@ export function deleteLocalBook(bookId: string): void {
     const existing = getLocalBooks()
     const filtered = existing.filter((b) => b.id !== bookId)
     localStorage.setItem(LOCAL_BOOKS_KEY, JSON.stringify(filtered))
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new Event(LOCAL_BOOKS_EVENT))
+    }
   } catch (err) {
     console.error('[localBooksService] Error deleting local book:', err)
   }
@@ -73,4 +83,3 @@ export function getLocalBookById(id: string): Book | undefined {
 export function getLocalBookBySlug(slug: string): Book | undefined {
   return getLocalBooks().find((b) => b.slug === slug)
 }
-

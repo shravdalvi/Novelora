@@ -53,7 +53,7 @@ export const Footer: React.FC = () => {
             {/* Social Icons */}
             <div className="flex items-center gap-3 pt-2">
               <a
-                href="https://twitter.com"
+                href="https://x.com/shravanietc"
                 target="_blank"
                 rel="noreferrer"
                 className="w-9 h-9 border-2 border-ink flex items-center justify-center transition-all hover:-translate-y-0.5 shadow-hard-sm"
@@ -68,7 +68,7 @@ export const Footer: React.FC = () => {
                 </svg>
               </a>
               <a
-                href="https://instagram.com"
+                href="https://www.instagram.com/shrav_dalvi/"
                 target="_blank"
                 rel="noreferrer"
                 className="w-9 h-9 border-2 border-ink flex items-center justify-center transition-all hover:-translate-y-0.5 shadow-hard-sm"
@@ -83,15 +83,16 @@ export const Footer: React.FC = () => {
                 </svg>
               </a>
               <a
-                href="https://wattpad.com"
+                href="https://www.wattpad.com/user/author-stella"
                 target="_blank"
                 rel="noreferrer"
-                className="w-9 h-9 border-2 border-ink flex items-center justify-center font-bangers text-sm transition-all hover:-translate-y-0.5 shadow-hard-sm"
+                className="w-9 h-9 border-2 border-ink flex items-center justify-center font-bangers text-base transition-all hover:-translate-y-0.5 shadow-hard-sm"
                 style={{
                   backgroundColor: '#EDE8DF',
                   color: '#1A1A1A',
                 }}
-                aria-label="Wattpad"
+                aria-label="Wattpad (@author-stella)"
+                title="Wattpad: @author-stella"
               >
                 W
               </a>
