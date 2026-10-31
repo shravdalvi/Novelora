@@ -3,10 +3,9 @@ import { Link } from 'react-router-dom'
 import { PageWrapper } from '../../components/layout/PageWrapper'
 import { AdminSidebar } from '../../components/layout/AdminSidebar'
 import { Button } from '../../components/ui/Button'
-import { collection, collectionGroup, onSnapshot, query } from 'firebase/firestore'
+import { collection, collectionGroup, onSnapshot, query, where } from 'firebase/firestore'
 import { db } from '../../services/firebase'
-import { getLocalBooks, LOCAL_BOOKS_EVENT } from '../../services/localBooksService'
-import type { AdminStats, Book, Chapter } from '../../types'
+import type { AdminStats } from '../../types'
 
 export const Dashboard: React.FC = () => {
   const [stats, setStats] = useState<AdminStats>({
@@ -20,87 +19,90 @@ export const Dashboard: React.FC = () => {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    let cloudBooks: Book[] = []
-    let cloudChapters: Chapter[] = []
+    // Track each stat independently via Firestore real-time listeners.
+    // Never mix localStorage counts into these — localStorage is for the writing
+    // studio (author-side). The dashboard stats must reflect cloud truth only.
+    let totalBooks = 0
+    let totalChapters = 0
+    let publishedChapters = 0
+    let draftChapters = 0
 
-    const recalculateStats = () => {
-      // Merge Firestore cloud books with any local storage books
-      const cloudIds = new Set(cloudBooks.map((b) => b.id))
-      const localOnlyBooks = getLocalBooks().filter((b) => !cloudIds.has(b.id))
-      const allBooks = [...cloudBooks, ...localOnlyBooks]
-
-      const totalBooks = allBooks.length
-      const publishedBooks = allBooks.filter((b) => b.visibility === 'published').length
-      const draftBooks = allBooks.filter((b) => b.visibility !== 'published').length
-
-      // Count chapters & drafts
-      const totalChapters = cloudChapters.length
-      const draftChapters = cloudChapters.filter((c) => c.status !== 'published').length
-
-      // Total drafts include both unpublished books and unpublished chapters
-      const totalDrafts = draftBooks + draftChapters
-      const totalPublished = publishedBooks + (totalChapters - draftChapters)
-
+    const pushStats = () => {
       setStats({
         totalBooks,
         totalChapters,
-        totalDrafts,
-        totalPublished,
+        totalDrafts: draftChapters,
+        totalPublished: publishedChapters,
         totalReads: 0,
         recentComments: [],
       })
       setLoading(false)
     }
 
-    // 1. Initial calculation from local storage right away
-    recalculateStats()
-
-    // 2. Real-time listener on the 'books' collection
-    const booksQuery = query(collection(db, 'books'))
+    // 1. Real-time count of books
     const unsubBooks = onSnapshot(
-      booksQuery,
-      (snapshot) => {
-        cloudBooks = snapshot.docs.map((d) => ({
-          id: d.id,
-          ...d.data(),
-        })) as Book[]
-        recalculateStats()
+      collection(db, 'books'),
+      (snap) => {
+        totalBooks = snap.size
+        pushStats()
       },
       (err) => {
-        console.warn('Realtime books listener error:', err)
-        recalculateStats()
+        console.warn('[Dashboard] books listener error:', err)
       }
     )
 
-    // 3. Real-time listener on all 'chapters' across all books via collectionGroup
-    const chaptersQuery = query(collectionGroup(db, 'chapters'))
-    const unsubChapters = onSnapshot(
-      chaptersQuery,
-      (snapshot) => {
-        cloudChapters = snapshot.docs.map((d) => ({
-          id: d.id,
-          ...d.data(),
-        })) as Chapter[]
-        recalculateStats()
-      },
-      (err) => {
-        console.warn('Realtime chapters listener error:', err)
-        recalculateStats()
+    // Helper: deduplicate chapter docs by normalized title so stale Firestore
+    // duplicates don't inflate counts before the next sync cleans them up.
+    const deduplicateByTitle = (docs: Array<{ data(): Record<string, unknown> }>) => {
+      const seen = new Set<string>()
+      for (const d of docs) {
+        const title = String((d.data() as { title?: string }).title ?? '').trim().toLowerCase()
+        seen.add(title)
       }
-    )
-
-    // 4. Local storage event listener (for offline/instant local book changes)
-    const handleLocalUpdate = () => {
-      recalculateStats()
+      return seen.size
     }
-    window.addEventListener(LOCAL_BOOKS_EVENT, handleLocalUpdate)
-    window.addEventListener('storage', handleLocalUpdate)
+
+    // 2. Real-time count of ALL chapters (deduplicated by title)
+    const unsubAllChapters = onSnapshot(
+      collectionGroup(db, 'chapters'),
+      (snap) => {
+        totalChapters = deduplicateByTitle(snap.docs)
+        pushStats()
+      },
+      (err) => {
+        console.warn('[Dashboard] all-chapters listener error:', err)
+      }
+    )
+
+    // 3. Real-time count of PUBLISHED chapters (deduplicated by title)
+    const unsubPublished = onSnapshot(
+      query(collectionGroup(db, 'chapters'), where('status', '==', 'published')),
+      (snap) => {
+        publishedChapters = deduplicateByTitle(snap.docs)
+        pushStats()
+      },
+      (err) => {
+        console.warn('[Dashboard] published-chapters listener error:', err)
+      }
+    )
+
+    // 4. Real-time count of DRAFT chapters (deduplicated by title)
+    const unsubDrafts = onSnapshot(
+      query(collectionGroup(db, 'chapters'), where('status', '==', 'draft')),
+      (snap) => {
+        draftChapters = deduplicateByTitle(snap.docs)
+        pushStats()
+      },
+      (err) => {
+        console.warn('[Dashboard] draft-chapters listener error:', err)
+      }
+    )
 
     return () => {
       unsubBooks()
-      unsubChapters()
-      window.removeEventListener(LOCAL_BOOKS_EVENT, handleLocalUpdate)
-      window.removeEventListener('storage', handleLocalUpdate)
+      unsubAllChapters()
+      unsubPublished()
+      unsubDrafts()
     }
   }, [])
 

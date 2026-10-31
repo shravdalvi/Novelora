@@ -10,6 +10,7 @@ import {
   onAuthStateChange,
   getIdTokenResult,
 } from '../services/authService'
+import { syncAuthorDataToFirestore } from '../services/cloudSyncService'
 import type { User } from '../types'
 
 export interface AuthContextType {
@@ -67,6 +68,9 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
               },
               { merge: true }
             ).catch(console.warn)
+
+            // Automatically sync author novels and published chapters to Cloud Firestore
+            syncAuthorDataToFirestore().catch(console.warn)
           }
 
           if (userSnapshot.exists()) {

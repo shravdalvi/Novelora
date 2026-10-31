@@ -43,8 +43,28 @@ export async function getPublishedChapters(bookId: string): Promise<Chapter[]> {
   )
 
   const combined = [...cloudChapters.filter((c) => !deletedIds.has(c.id)), ...localPublished]
-  combined.sort((a, b) => (a.chapterNumber || 0) - (b.chapterNumber || 0))
-  return combined
+
+  // Deduplicate by normalized title
+  const seen = new Set<string>()
+  const deduplicated: Chapter[] = []
+  for (const ch of combined) {
+    const norm = ch.title.trim().toLowerCase()
+    if (!seen.has(norm)) {
+      seen.add(norm)
+      deduplicated.push(ch)
+    }
+  }
+
+  deduplicated.sort((a, b) => {
+    if (a.title.trim().toLowerCase() === 'characters') return -1
+    if (b.title.trim().toLowerCase() === 'characters') return 1
+    return (a.chapterNumber || 0) - (b.chapterNumber || 0)
+  })
+
+  return deduplicated.map((ch, idx) => ({
+    ...ch,
+    chapterNumber: idx + 1,
+  }))
 }
 
 /**
@@ -123,8 +143,8 @@ export async function getChapterByNumber(
     console.warn('Error fetching chapter by number from Firestore, checking local backup:', err)
   }
 
-  // Check local chapters
-  const localChapters = getLocalChapters(bookId)
+  // Fallback to deduplicated chapters list
+  const localChapters = await getPublishedChapters(bookId)
   const localMatch = localChapters.find((c) => c.chapterNumber === chapterNumber)
   if (localMatch) return localMatch
 
@@ -155,8 +175,28 @@ export async function getAllChaptersForBook(bookId: string): Promise<Chapter[]> 
   const localChapters = getLocalChapters(bookId).filter((c) => !cloudIds.has(c.id) && !deletedIds.has(c.id))
 
   const combined = [...cloudChapters.filter((c) => !deletedIds.has(c.id)), ...localChapters]
-  combined.sort((a, b) => (a.chapterNumber || 0) - (b.chapterNumber || 0))
-  return combined
+
+  // Deduplicate by normalized title
+  const seen = new Set<string>()
+  const deduplicated: Chapter[] = []
+  for (const ch of combined) {
+    const norm = ch.title.trim().toLowerCase()
+    if (!seen.has(norm)) {
+      seen.add(norm)
+      deduplicated.push(ch)
+    }
+  }
+
+  deduplicated.sort((a, b) => {
+    if (a.title.trim().toLowerCase() === 'characters') return -1
+    if (b.title.trim().toLowerCase() === 'characters') return 1
+    return (a.chapterNumber || 0) - (b.chapterNumber || 0)
+  })
+
+  return deduplicated.map((ch, idx) => ({
+    ...ch,
+    chapterNumber: idx + 1,
+  }))
 }
 
 // Namespace export for components that prefer object-style imports

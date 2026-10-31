@@ -41,7 +41,7 @@ export interface Chapter {
   headerImageUrl?: string
   headerVideoUrl?: string
   backgroundImageUrl?: string
-  overlayOpacity: number
+  overlayOpacity?: number
   status: ChapterStatus
   scheduledPublishAt?: Timestamp | string | number | Date | null
   wordCount: number

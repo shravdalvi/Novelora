@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import { collection, onSnapshot } from 'firebase/firestore'
+import { collection, onSnapshot, query, where } from 'firebase/firestore'
 import { db } from '../../services/firebase'
 import { subscribeToPublishedBooks } from '../../services/bookService'
-import { getLocalBooks } from '../../services/localBooksService'
+import { getLocalBooks, getLocalChapters } from '../../services/localBooksService'
 
 interface ShowcaseBook {
   id: string
@@ -19,13 +19,14 @@ interface ShowcaseBook {
 // Fallback real author books so reload NEVER shows an empty card
 const DEFAULT_AUTHOR_BOOKS: ShowcaseBook[] = [
   {
-    id: 'author-boss-01',
+    id: 'book-1793291155125',
     title: 'My Overbearing Boss',
     slug: 'my-overbearing-boss',
-    coverImageUrl: 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=600&auto=format&fit=crop&q=80',
-    description: 'A fiercely independent editor clashes with an enigmatic, ruthless media mogul who hides an ancient secret behind his boardroom power.',
-    genres: ['Romance', 'Drama', 'Mystery'],
-    chapterCount: 0,
+    coverImageUrl: '/covers/my-overbearing-boss.jpg',
+    description:
+      "My name is Kathryn Landon, and apparently, I have the worst luck when it comes to men.\n\nEspecially the one signing my paychecks.\n\nKai Havertz. Thirty-two. CEO of Havertz Group. One of the richest, most powerful men in New York, and an arrogant bastard with a face that should honestly be illegal. Women throw themselves at him, yet somehow, I'm the only woman he seems determined to torment.\n\nHe's controlling, infuriating, ridiculously possessive, and has absolutely no business interfering in my personal life. But lately, his attention has become a little too personal, his stares a little too lingering, and his jealousy a little too obvious.\n\n\nBut Kai isn't the only man with a complicated love life.\n\nChristian Young, the thirty-two-year-old CEO of Young Heels, notorious Casanova, and Kai's best friend, has met his match in Nina Black. Twenty-four, brutally unapologetic, and completely immune to his irresistible charm.",
+    genres: ['Office Romance', 'Smut', 'Billionaires and CEOs'],
+    chapterCount: 8,
     status: 'ongoing',
   },
   {
@@ -99,20 +100,29 @@ export const HeroBookShowcase: React.FC = () => {
 
     try {
       const chaptersRef = collection(db, 'books', currentBook.id, 'chapters')
+      const q = query(chaptersRef, where('status', '==', 'published'))
       const unsub = onSnapshot(
-        chaptersRef,
+        q,
         (snap) => {
-          const publishedChapters = snap.docs.filter((d) => d.data().status === 'published')
-          setLiveChapterCount(publishedChapters.length)
+          const cloudIds = new Set(snap.docs.map((d) => d.id))
+          const localList = getLocalChapters(currentBook.id).filter(
+            (c) => c.status === 'published' && !cloudIds.has(c.id)
+          )
+          const total = snap.docs.length + localList.length
+          const baseline = currentBook.slug === 'my-overbearing-boss' ? 8 : (currentBook.chapterCount || 1)
+          setLiveChapterCount(Math.max(total, baseline))
         },
         (err) => {
           console.warn('Real-time chapters check fallback:', err)
-          setLiveChapterCount(currentBook.chapterCount ?? 0)
+          const localList = getLocalChapters(currentBook.id).filter((c) => c.status === 'published')
+          const baseline = currentBook.slug === 'my-overbearing-boss' ? 8 : (currentBook.chapterCount || 1)
+          setLiveChapterCount(Math.max(localList.length, baseline))
         }
       )
       return () => unsub()
     } catch {
-      setLiveChapterCount(currentBook.chapterCount ?? 0)
+      const baseline = currentBook.slug === 'my-overbearing-boss' ? 8 : (currentBook.chapterCount || 1)
+      setLiveChapterCount(baseline)
     }
   }, [currentBook?.id, currentBook?.chapterCount])
 
@@ -198,10 +208,7 @@ export const HeroBookShowcase: React.FC = () => {
             {/* Real Book Cover Image */}
             <div className="relative w-full h-[300px] border-b-3 border-ink overflow-hidden bg-sand">
               <img
-                src={
-                  currentBook.coverImageUrl ||
-                  'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=600&auto=format&fit=crop&q=80'
-                }
+                src={currentBook.coverImageUrl || '/covers/my-overbearing-boss.jpg'}
                 alt={currentBook.title}
                 className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
               />

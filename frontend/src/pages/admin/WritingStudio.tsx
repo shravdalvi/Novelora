@@ -11,6 +11,7 @@ import { doc, getDoc, setDoc, addDoc, collection, getDocs, serverTimestamp, upda
 import { db } from '../../services/firebase'
 import { uploadChapterImage, compressDataUrlIfNeeded } from '../../services/uploadService'
 import { getLocalBooks, getLocalChapterById, saveLocalChapter, deleteLocalChapter, updateLocalBook } from '../../services/localBooksService'
+import { syncAuthorDataToFirestore } from '../../services/cloudSyncService'
 import { useAuth } from '../../hooks/useAuth'
 import { PageWrapper } from '../../components/layout/PageWrapper'
 import { Button } from '../../components/ui/Button'
@@ -111,6 +112,7 @@ export const WritingStudio: React.FC = () => {
       }
     }
     loadBooks()
+    syncAuthorDataToFirestore().catch(console.warn)
   }, [])
 
   useEffect(() => {
@@ -261,6 +263,28 @@ export const WritingStudio: React.FC = () => {
 
     if (currentChapterIdRef.current === 'new') {
       try {
+        // Ensure parent book exists in Firestore so queries succeed everywhere
+        try {
+          const bookRef = doc(db, 'books', bookId)
+          const bookSnap = await getDoc(bookRef)
+          if (!bookSnap.exists()) {
+            const localBook = getLocalBooks().find((b) => b.id === bookId)
+            if (localBook) {
+              await setDoc(
+                bookRef,
+                {
+                  ...localBook,
+                  createdAt: serverTimestamp(),
+                  updatedAt: serverTimestamp(),
+                },
+                { merge: true }
+              )
+            }
+          }
+        } catch (e) {
+          console.warn('Book check notice:', e)
+        }
+
         const docRef = await addDoc(
           collection(db, 'books', bookId, 'chapters'),
           {
@@ -319,16 +343,37 @@ export const WritingStudio: React.FC = () => {
           updatedAt: new Date().toISOString(),
         })
 
-        if (!chapterId.startsWith('chapter-')) {
-          await setDoc(
-            doc(db, 'books', bookId, 'chapters', chapterId),
-            {
-              ...payload,
-              updatedAt: serverTimestamp(),
-            },
-            { merge: true }
-          )
+        // Ensure parent book exists in Firestore
+        try {
+          const bookRef = doc(db, 'books', bookId)
+          const bookSnap = await getDoc(bookRef)
+          if (!bookSnap.exists()) {
+            const localBook = getLocalBooks().find((b) => b.id === bookId)
+            if (localBook) {
+              await setDoc(
+                bookRef,
+                {
+                  ...localBook,
+                  createdAt: serverTimestamp(),
+                  updatedAt: serverTimestamp(),
+                },
+                { merge: true }
+              )
+            }
+          }
+        } catch (e) {
+          console.warn('Parent book check:', e)
         }
+
+        // Always save to Firestore
+        await setDoc(
+          doc(db, 'books', bookId, 'chapters', chapterId),
+          {
+            ...payload,
+            updatedAt: serverTimestamp(),
+          },
+          { merge: true }
+        )
 
         if (finalStatus === 'published') {
           syncBookChapterCount(bookId)

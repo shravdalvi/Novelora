@@ -9,7 +9,11 @@ import {
   updateLocalBook,
   getDeletedChapterIds,
   markChapterAsDeleted,
+  getLocalBookById,
+  getLocalBookBySlug,
+  INITIAL_AUTHOR_CHAPTERS,
 } from '../../services/localBooksService'
+import { syncAuthorDataToFirestore } from '../../services/cloudSyncService'
 import { PageWrapper } from '../../components/layout/PageWrapper'
 import { AdminSidebar } from '../../components/layout/AdminSidebar'
 import { ChapterList } from '../../components/book/ChapterList'
@@ -27,6 +31,23 @@ export const ChaptersList: React.FC = () => {
 
   const [deleteTarget, setDeleteTarget] = useState<Chapter | null>(null)
   const [deleting, setDeleting] = useState(false)
+  const [syncing, setSyncing] = useState(false)
+
+  const handleSyncToCloud = async () => {
+    setSyncing(true)
+    try {
+      const res = await syncAuthorDataToFirestore(true)
+      toast.success(
+        res.chaptersSynced > 0
+          ? `Synced ${res.chaptersSynced} chapter(s) to Cloud Firestore! Readers on any device can now view them.`
+          : 'All chapters are already synced with Cloud Firestore!'
+      )
+    } catch (err: any) {
+      toast.error('Sync failed: ' + (err?.message || 'Check Firestore permissions'))
+    } finally {
+      setSyncing(false)
+    }
+  }
 
   useEffect(() => {
     if (!bookId) return
@@ -36,8 +57,13 @@ export const ChaptersList: React.FC = () => {
     const unsubBook = onSnapshot(bookRef, (snap) => {
       if (snap.exists()) {
         setBook({ id: snap.id, ...snap.data() } as Book)
+      } else {
+        const local = getLocalBookById(bookId) || getLocalBookBySlug(bookId)
+        if (local) setBook(local)
       }
     })
+
+    syncAuthorDataToFirestore().catch(console.warn)
 
     const chaptersRef = collection(db, 'books', bookId, 'chapters')
     const q = query(chaptersRef, orderBy('chapterNumber', 'asc'))
@@ -51,7 +77,9 @@ export const ChaptersList: React.FC = () => {
         if (cloudIds.has(c.id) || deletedIds.has(c.id)) return false
         // Purge orphaned local chapter duplicates if already saved to cloud
         const isDuplicate = cloudList.some(
-          (cloudCh) => cloudCh.chapterNumber === c.chapterNumber && cloudCh.title === c.title
+          (cloudCh) =>
+            cloudCh.chapterNumber === c.chapterNumber ||
+            cloudCh.title.trim().toLowerCase() === c.title.trim().toLowerCase()
         )
         if (isDuplicate) {
           deleteLocalChapter(c.id)
@@ -61,8 +89,40 @@ export const ChaptersList: React.FC = () => {
       })
       const filteredCloud = cloudList.filter((c) => !deletedIds.has(c.id))
       const combined = [...filteredCloud, ...localList]
-      combined.sort((a, b) => (a.chapterNumber || 0) - (b.chapterNumber || 0))
-      setChapters(combined)
+
+      // Deduplicate chapters by normalized title to prevent duplicate "First day at work"
+      const seenTitles = new Set<string>()
+      const deduplicated: Chapter[] = []
+      for (const ch of combined) {
+        const norm = ch.title.trim().toLowerCase()
+        if (!seenTitles.has(norm)) {
+          seenTitles.add(norm)
+          deduplicated.push(ch)
+        }
+      }
+
+      // Ensure Chapter 1 "Characters" is always present if not explicitly deleted
+      if (!seenTitles.has('characters') && !deletedIds.has('ch-boss-001')) {
+        deduplicated.unshift({
+          ...INITIAL_AUTHOR_CHAPTERS[0],
+          bookId: bookId || 'book-1793291155125',
+        })
+      }
+
+      // Order chapters: "Characters" first, followed by numeric sequence
+      deduplicated.sort((a, b) => {
+        if (a.title.trim().toLowerCase() === 'characters') return -1
+        if (b.title.trim().toLowerCase() === 'characters') return 1
+        return (a.chapterNumber || 0) - (b.chapterNumber || 0)
+      })
+
+      // Assign continuous clean chapter numbers (1, 2, 3...)
+      const numbered = deduplicated.map((ch, idx) => ({
+        ...ch,
+        chapterNumber: idx + 1,
+      }))
+
+      setChapters(numbered)
       setLoading(false)
     }
 
@@ -181,6 +241,15 @@ export const ChaptersList: React.FC = () => {
             </div>
 
             <div className="flex flex-wrap items-center gap-3">
+              <Button
+                variant="outline"
+                size="md"
+                onClick={handleSyncToCloud}
+                disabled={syncing}
+                title="Sync all chapters to Cloud Database so readers on any device see them in real-time"
+              >
+                {syncing ? 'SYNCING...' : '☁️ SYNC TO CLOUD'}
+              </Button>
               <Link to="/admin/books">
                 <Button variant="secondary" size="md">
                   ← BACK TO BOOKS

@@ -62,8 +62,31 @@ export const BookDetail: React.FC = () => {
               (c) => c.status === 'published' && !cloudIds.has(c.id)
             )
             const combined = [...cloudList, ...localPublished]
-            combined.sort((a, b) => (a.chapterNumber || 0) - (b.chapterNumber || 0))
-            setChapters(combined)
+
+            // Deduplicate titles
+            const seen = new Set<string>()
+            const deduplicated: Chapter[] = []
+            for (const ch of combined) {
+              const norm = ch.title.trim().toLowerCase()
+              if (!seen.has(norm)) {
+                seen.add(norm)
+                deduplicated.push(ch)
+              }
+            }
+
+            // Ensure Characters is always first
+            deduplicated.sort((a, b) => {
+              if (a.title.trim().toLowerCase() === 'characters') return -1
+              if (b.title.trim().toLowerCase() === 'characters') return 1
+              return (a.chapterNumber || 0) - (b.chapterNumber || 0)
+            })
+
+            const numbered = deduplicated.map((ch, idx) => ({
+              ...ch,
+              chapterNumber: idx + 1,
+            }))
+
+            setChapters(numbered)
           }
 
           unsubChapters = onSnapshot(

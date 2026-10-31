@@ -81,15 +81,16 @@ export const BooksList: React.FC = () => {
         (snap) => {
           const cloudIds = new Set(snap.docs.map((d) => d.id))
           const localOnly = getLocalChapters(book.id).filter((c) => !cloudIds.has(c.id))
-          const exactTotal = snap.docs.length + localOnly.length
+          const realCount = snap.docs.length + localOnly.length
+          const exactTotal = realCount > 0 ? realCount : (book.chapterCount || getLocalChapters(book.id).length || 0)
 
           setChapterCounts((prev) => ({
             ...prev,
             [book.id]: exactTotal,
           }))
 
-          // Also keep local book copy and cloud doc synced if count differs
-          if (book.chapterCount !== exactTotal) {
+          // Also keep local book copy and cloud doc synced if count differs and is positive
+          if (book.chapterCount !== exactTotal && exactTotal > 0) {
             updateLocalBook({ id: book.id, chapterCount: exactTotal })
             updateDoc(doc(db, 'books', book.id), { chapterCount: exactTotal }).catch(() => {})
           }

@@ -61,11 +61,11 @@ export function subscribeToPublishedBooks(
     const books = [...cloudBooks, ...localPublished].map((b) => {
       // Real-time published chapters count calculation
       const liveCloudCount = publishedChapterCountsByBook[b.id]
-      const liveLocalCount = localChapterCounts[b.id] || 0
-      const exactCount =
-        typeof liveCloudCount === 'number'
-          ? Math.max(liveCloudCount, liveLocalCount)
-          : (liveLocalCount || b.chapterCount || 0)
+      const liveLocalCount =
+        localChapterCounts[b.id] ||
+        (b.slug === 'my-overbearing-boss' ? localChapterCounts['book-1793291155125'] : 0) ||
+        0
+      const exactCount = Math.max(liveCloudCount || 0, liveLocalCount, b.chapterCount || 0)
 
       return {
         ...b,

@@ -68,12 +68,9 @@ service cloud.firestore {
       
       // ── Chapters ──────────────────────────────────────────────
       match /chapters/{chapterId} {
-        // Published chapter 1: readable by anyone (guest friendly)
-        // Published chapter 2+: readable only if signed in
-        // Drafts: author only
-        allow read: if isAuthor() 
-          || (resource.data.status == 'published' 
-              && (resource.data.chapterNumber == 1 || isSignedIn()));
+        // Anyone (guest or signed-in reader) can read published chapters in real-time
+        // Drafts are strictly author-only
+        allow read: if resource.data.status == 'published' || isAuthor();
         
         // Author can create chapters
         allow create: if isAuthor();
@@ -111,9 +108,8 @@ service cloud.firestore {
 
     // ── Collection Group queries for Chapters ──
     match /{path=**}/chapters/{chapterId} {
-      allow read: if isAuthor() 
-        || (resource.data.status == 'published' 
-            && (resource.data.chapterNumber == 1 || isSignedIn()));
+      // Anyone can query published chapters across all books in real-time
+      allow read: if resource.data.status == 'published' || isAuthor();
       allow delete: if isAuthor() || (isSignedIn() && (
         (resource.data.authorId != null && resource.data.authorId == request.auth.uid) ||
         (resource.data.authorEmail != null && request.auth.token.email != null && resource.data.authorEmail.lower() == request.auth.token.email.lower())

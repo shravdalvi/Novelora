@@ -29,6 +29,771 @@
   ],
   "books": [
     {
+      "id": "book-1793291155125",
+      "title": "My Overbearing Boss",
+      "slug": "my-overbearing-boss",
+      "coverImageUrl": "/covers/my-overbearing-boss.jpg",
+      "description": "My name is Kathryn Landon, and apparently, I have the worst luck when it comes to men.\n\nEspecially the one signing my paychecks.\n\nKai Havertz. Thirty-two. CEO of Havertz Group. One of the richest, most powerful men in New York, and an arrogant bastard with a face that should honestly be illegal. Women throw themselves at him, yet somehow, I'm the only woman he seems determined to torment.\n\nHe's controlling, infuriating, ridiculously possessive, and has absolutely no business interfering in my personal life. But lately, his attention has become a little too personal, his stares a little too lingering, and his jealousy a little too obvious.\n\n\nBut Kai isn't the only man with a complicated love life.\n\nChristian Young, the thirty-two-year-old CEO of Young Heels, notorious Casanova, and Kai's best friend, has met his match in Nina Black. Twenty-four, brutally unapologetic, and completely immune to his irresistible charm.",
+      "genres": [
+        "Office Romance",
+        "Smut",
+        "Billionaires and CEOs",
+        "Enemies to Lovers",
+        "Age gap"
+      ],
+      "tags": [
+        "agegap",
+        "arrogant",
+        "assistant",
+        "billionaire boss",
+        "casanova",
+        "ceo",
+        "design",
+        "dominating",
+        "enemiestolovers",
+        "hatelove",
+        "heels",
+        "jealousy",
+        "love",
+        "newadult",
+        "officeromance",
+        "personalassistant",
+        "possessive",
+        "rich",
+        "romance"
+      ],
+      "status": "ongoing",
+      "visibility": "published",
+      "chapterCount": 5,
+      "chapters": [
+        {
+          "id": "ch-boss-001",
+          "bookId": "book-1793291155125",
+          "chapterNumber": 1,
+          "title": "Characters",
+          "status": "published",
+          "wordCount": 360,
+          "content": {
+            "type": "doc",
+            "content": [
+              {
+                "type": "heading",
+                "attrs": {
+                  "level": 2
+                },
+                "content": [
+                  {
+                    "type": "text",
+                    "marks": [
+                      {
+                        "type": "bold"
+                      }
+                    ],
+                    "text": "Kai Havertz"
+                  }
+                ]
+              },
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "marks": [
+                      {
+                        "type": "italic"
+                      }
+                    ],
+                    "text": "CEO of Havertz Group • 32 years old"
+                  }
+                ]
+              },
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "The CEO of Havertz Group. Arrogant, controlling, and dangerously possessive. He is used to getting whatever he wants. His latest obsession is none other than his new personal secretary, Kathryn. He would rather choke than admit he is jealous when anyone gets her attention. After all, he's just her boss, not her boyfriend. At least, that's what he keeps telling himself."
+                  }
+                ]
+              },
+              {
+                "type": "heading",
+                "attrs": {
+                  "level": 2
+                },
+                "content": [
+                  {
+                    "type": "text",
+                    "marks": [
+                      {
+                        "type": "bold"
+                      }
+                    ],
+                    "text": "Kathryn Landon"
+                  }
+                ]
+              },
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "marks": [
+                      {
+                        "type": "italic"
+                      }
+                    ],
+                    "text": "Executive Personal Secretary • 24 years old"
+                  }
+                ]
+              },
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "A 24-year-old ambitious woman, soon to become Mr. Havertz’s personal secretary. Her friends keep trying to set her up on blind dates, but somehow, every single date gets ruined by an urgent late-night task Mr. Havertz conveniently assigns at the exact same time. Coincidence? Or is her handsome, workaholic boss deliberately making sure she stays off the dating market? Either way, someone has a little explaining to do..."
+                  }
+                ]
+              },
+              {
+                "type": "heading",
+                "attrs": {
+                  "level": 2
+                },
+                "content": [
+                  {
+                    "type": "text",
+                    "marks": [
+                      {
+                        "type": "bold"
+                      }
+                    ],
+                    "text": "Nina Black"
+                  }
+                ]
+              },
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "marks": [
+                      {
+                        "type": "italic"
+                      }
+                    ],
+                    "text": "Kathryn's Best Friend • 24 years old"
+                  }
+                ]
+              },
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "Kathryn's ride-or-die best friend, 24. The living definition of a walking red flag. Savage, unapologetic, and completely allergic to giving a fuck. She plays strictly by her own rules and answers to nobody except herself at Young Heels. Pretty face, filthy attitude, zero regrets, and definitely not interested in Christian Young."
+                  }
+                ]
+              },
+              {
+                "type": "heading",
+                "attrs": {
+                  "level": 2
+                },
+                "content": [
+                  {
+                    "type": "text",
+                    "marks": [
+                      {
+                        "type": "bold"
+                      }
+                    ],
+                    "text": "Christian Young"
+                  }
+                ]
+              },
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "marks": [
+                      {
+                        "type": "italic"
+                      }
+                    ],
+                    "text": "CEO of Young Heels • 32 years old"
+                  }
+                ]
+              },
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "32. CEO of Young Heels and best friend of Kai Havertz. A notorious Casanova with a reputation for breaking hearts and never catching feelings. Every woman wants him, but he only wants what he can't have. Except Nina Black, who couldn't care less about his charm. And that's where the real trouble begins..."
+                  }
+                ]
+              }
+            ]
+          },
+          "headerImageUrl": "",
+          "headerVideoUrl": "",
+          "overlayOpacity": 0,
+          "likeCount": 0,
+          "createdAt": "2026-10-30T09:00:00.000Z",
+          "updatedAt": "2026-10-30T09:00:00.000Z"
+        },
+        {
+          "id": "ch-boss-002",
+          "bookId": "book-1793291155125",
+          "chapterNumber": 2,
+          "title": "First day at work",
+          "status": "published",
+          "wordCount": 1209,
+          "content": {
+            "type": "doc",
+            "content": [
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "marks": [
+                      {
+                        "type": "bold"
+                      }
+                    ],
+                    "text": "Kathryn"
+                  }
+                ]
+              },
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "The fire alarm rang and everybody in the office ran in panic. The firemen came to rescue us and took us to a safe place."
+                  }
+                ]
+              },
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "But wait a minute, why would I hear the fire alarm sound when I was standing far away from the burning building?"
+                  }
+                ]
+              },
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "Suddenly, I woke up from my dream."
+                  }
+                ]
+              },
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "\"Ah, my god, it's my alarm.\" I opened my eyes and grabbed my phone to check the time. It was 4 p.m."
+                  }
+                ]
+              },
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "I had been reading the CEOs' biographies all night and couldn't sleep, so I took a short nap."
+                  }
+                ]
+              },
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "My doorbell rang."
+                  }
+                ]
+              },
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "It must be her, my best friend Nina Black. Yesterday I told her I got a job at Havertz Group as the CEO's PA."
+                  }
+                ]
+              },
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "I went downstairs to open the door. She was excited and hugged me, then walked inside."
+                  }
+                ]
+              },
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "\"Why did you come so early?\" I yawned."
+                  }
+                ]
+              },
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "She gave me a bored look and sat on the couch. \"Kate, don't be lazy. You have your first day at work tomorrow, I want you to be prepared well,\" she said."
+                  }
+                ]
+              },
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "\"What do you mean?\""
+                  }
+                ]
+              },
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "\"I mean, your sexy boss might be an arrogant beast, but he has eyes that linger longer than they should.\""
+                  }
+                ]
+              },
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "\"Nina! I'm going there to work, not to flirt!\" I said defensively."
+                  }
+                ]
+              },
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "\"Yeah, yeah, whatever. Let's make sure you look stunning. Tomorrow is day one!\""
+                  }
+                ]
+              }
+            ]
+          },
+          "headerImageUrl": "",
+          "headerVideoUrl": "",
+          "overlayOpacity": 0,
+          "likeCount": 0,
+          "createdAt": "2026-10-30T10:00:00.000Z",
+          "updatedAt": "2026-10-30T10:00:00.000Z"
+        },
+        {
+          "id": "ch-boss-003",
+          "bookId": "book-1793291155125",
+          "chapterNumber": 3,
+          "title": "I'm going to kill him",
+          "status": "published",
+          "wordCount": 1150,
+          "content": {
+            "type": "doc",
+            "content": [
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "marks": [
+                      {
+                        "type": "bold"
+                      }
+                    ],
+                    "text": "Kathryn"
+                  }
+                ]
+              },
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "Suddenly someone opened the office doors and strolled right in. Kill me now."
+                  }
+                ]
+              },
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "I quickly scrambled up from Kai Havertz’s lap, my face burning with unbearable heat."
+                  }
+                ]
+              },
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "\"I—I'm so sorry, Mr. Havertz! I didn't do it intentionally, I just tripped in my new heels!\" I stammered, frantically adjusting my skirt."
+                  }
+                ]
+              },
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "\"Well, well, what do we have going on here? Did I interrupt something special?\" The man who had just entered leaned against the mahogany doorframe, a devilish grin on his face."
+                  }
+                ]
+              },
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "He looked dangerously handsome—dark brown hair, piercing navy blue eyes, and an impeccably tailored black suit. Christian Young."
+                  }
+                ]
+              },
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "Christian smirked, walked over, and gently took my hand. Before I could pull away, he pressed a soft, teasing kiss to my knuckles. \"And who is this stunning lady?\""
+                  }
+                ]
+              },
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "\"Kathryn Landon. Mr. Havertz's new personal assistant,\" I whispered, heart hammering."
+                  }
+                ]
+              },
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "\"Christian. Stop flirting with my employees,\" Kai's voice cut through the air with frigid, lethal authority. His dark eyes narrowed, burning with unfiltered possession."
+                  }
+                ]
+              },
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "Before Christian could reply, the double doors slammed open again with a deafening bang."
+                  }
+                ]
+              },
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "\"N-Nina?!\" My jaw dropped. What the hell was my best friend doing storming into Havertz Group's executive suite?!"
+                  }
+                ]
+              },
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "Nina didn't even look at me. Her furious gaze locked directly onto Christian Young. \"You. Mr. Young. We need to talk about my designs right now.\""
+                  }
+                ]
+              }
+            ]
+          },
+          "headerImageUrl": "",
+          "headerVideoUrl": "",
+          "overlayOpacity": 0,
+          "likeCount": 0,
+          "createdAt": "2026-10-30T11:00:00.000Z",
+          "updatedAt": "2026-10-30T11:00:00.000Z"
+        },
+        {
+          "id": "ch-boss-004",
+          "bookId": "book-1793291155125",
+          "chapterNumber": 4,
+          "title": "Nina Black Gets Her Job Back",
+          "status": "published",
+          "wordCount": 1280,
+          "content": {
+            "type": "doc",
+            "content": [
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "marks": [
+                      {
+                        "type": "bold"
+                      }
+                    ],
+                    "text": "Nina"
+                  }
+                ]
+              },
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "\"Everyone dismiss,\" Christian said without breaking eye contact with me. The boardroom cleared in seconds."
+                  }
+                ]
+              },
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "\"Is this how you run a company, Mr. Young? Restricting my entry badge because a senior designer stole my portfolio?\" I threw the copies onto the glass conference table."
+                  }
+                ]
+              },
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "\"Call me Christian,\" he responded, a slow smirk playing on his lips."
+                  }
+                ]
+              },
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "\"Why the hell would I call you by your first name? I will prove that Scarlett Byrne stole my designs. When I do, you will fire her and give me my project back.\""
+                  }
+                ]
+              },
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "Christian leaned back, crossing his arms. \"Take a blank sheet. Both of you draw the prototype sketches right now in front of me.\""
+                  }
+                ]
+              },
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "Ten minutes later, my intricate pencil work was flawless—every stitch, curve, and arch drawn straight from my soul. Scarlett’s hands were trembling violently, barely able to replicate the shading."
+                  }
+                ]
+              },
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "Christian studied both sketches thoughtfully. His expression darkened with cold fury as he looked at Scarlett."
+                  }
+                ]
+              },
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "\"SCARLETT BYRNE. I am asking you once: did you steal her designs?\" His voice was an angry, controlled thunder that made the room freeze."
+                  }
+                ]
+              },
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "\"I... I'm so s-sorry, sir! I—\" Scarlett broke down sobbing."
+                  }
+                ]
+              },
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "\"Clean your desk. You're fired.\" Christian turned back to me, his navy eyes gleaming with pure admiration. \"Welcome back, Ms. Black. Lead designer of Young Heels.\""
+                  }
+                ]
+              }
+            ]
+          },
+          "headerImageUrl": "",
+          "headerVideoUrl": "",
+          "overlayOpacity": 0,
+          "likeCount": 0,
+          "createdAt": "2026-10-30T12:00:00.000Z",
+          "updatedAt": "2026-10-30T12:00:00.000Z"
+        },
+        {
+          "id": "ch-boss-005",
+          "bookId": "book-1793291155125",
+          "chapterNumber": 5,
+          "title": "Wild Cat?",
+          "status": "published",
+          "wordCount": 1190,
+          "content": {
+            "type": "doc",
+            "content": [
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "marks": [
+                      {
+                        "type": "bold"
+                      }
+                    ],
+                    "text": "Kathryn"
+                  }
+                ]
+              },
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "W-what... where should I look? Down at his abs?! Oh god, no—look up!"
+                  }
+                ]
+              },
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "Kai Havertz stood in the doorway of his penthouse shirtless, a towel hanging loose around his broad neck, water droplets glistening on his Greek-god chest."
+                  }
+                ]
+              },
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "\"What are you staring at, Kate?\" He smirked, his deep voice vibrating right through me."
+                  }
+                ]
+              },
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "\"I—nothing! Ms. Leena said you needed these urgent contract files immediately!\" I squeaked, gripping my portfolio like a shield."
+                  }
+                ]
+              },
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "Before I could take a step back, Kai leaned down, his lips barely a whisper away from my ear: \"Don't slam the door in my face. Get inside, Kate.\""
+                  }
+                ]
+              },
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "I brushed past him into the penthouse, my pulse skyrocketing. Did he just call me Kate?! Nobody at the firm calls me that."
+                  }
+                ]
+              },
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "A few minutes later, he walked into the lounge wearing a soft fitted charcoal sweater and sweatpants, his damp dark hair tousled carelessly. How can a man look this illegally attractive doing absolutely nothing?"
+                  }
+                ]
+              },
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "He sat on the leather sofa right next to me, closing the distance until our thighs almost brushed."
+                  }
+                ]
+              },
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "\"You're nervous, Kate. Are you afraid of me, or afraid of what you're feeling?\""
+                  }
+                ]
+              },
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "I snapped my head toward him, eyes blazing with defiance. \"I am not afraid of you, Mr. Havertz. Nor am I interested in your games.\""
+                  }
+                ]
+              },
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "Kai's lips curved into a wicked, dangerous smile. \"Feisty. A real little wild cat, aren't you?\""
+                  }
+                ]
+              }
+            ]
+          },
+          "headerImageUrl": "",
+          "headerVideoUrl": "",
+          "overlayOpacity": 0,
+          "likeCount": 0,
+          "createdAt": "2026-10-30T13:00:00.000Z",
+          "updatedAt": "2026-10-30T13:00:00.000Z"
+        }
+      ]
+    },
+    {
       "id": "book-echoes-forgotten-realm",
       "title": "Echoes of the Forgotten Realm",
       "slug": "echoes-of-the-forgotten-realm",
@@ -74,7 +839,7 @@
                 "content": [
                   {
                     "type": "text",
-                    "text": "Rounding a perilous overhang where loose shale skittered into the fog-shrouded abyss thousands of fathoms below, Lyra finally laid eyes upon the ancient monolith. It stood forty cubits tall, a monolithic spire of pure obsidian carved with terrifying mathematical precision, half-buried in the crushed rubble of a cataclysmic landslide that occurred millennia before the rise of the current dynasties. Unlike the brittle shale surrounding its base, the obsidian surface was mirror-smooth and unnaturally warm, completely free of clinging lichen, mountain moss, or morning frost, drinking the feeble afternoon sunlight without casting an ounce of reflection back into the gray mist. As Lyra drew closer, her breath forming pale specters in the freezing air, the vitreous stone began to ripple like agitated mercury disturbed by a falling pebble. Faint cerulean glyphs ignited deep within the stone's crystalline matrix, illuminating the jagged scars across her knuckles with a soft, bioluminescent aura. They were etched in High Vaelic\u2014the forbidden dead tongue of the First Architect Priesthood\u2014and as she stared into the glowing geometry, the glyphs pulsed in exact synchrony with the frantic pounding of her own accelerated heartbeat. Each glowing character seemed to pulse with suppressed kinetic fury, as if the ancient stone had captured the last dying breath of an elder civilization and was desperately waiting for a worthy inheritor to break the seal. Lyra traced the outer contours of a winged serpent sigil, feeling the ancient basalt vibrate against her fingertips like a living organism."
+                    "text": "Rounding a perilous overhang where loose shale skittered into the fog-shrouded abyss thousands of fathoms below, Lyra finally laid eyes upon the ancient monolith. It stood forty cubits tall, a monolithic spire of pure obsidian carved with terrifying mathematical precision, half-buried in the crushed rubble of a cataclysmic landslide that occurred millennia before the rise of the current dynasties. Unlike the brittle shale surrounding its base, the obsidian surface was mirror-smooth and unnaturally warm, completely free of clinging lichen, mountain moss, or morning frost, drinking the feeble afternoon sunlight without casting an ounce of reflection back into the gray mist. As Lyra drew closer, her breath forming pale specters in the freezing air, the vitreous stone began to ripple like agitated mercury disturbed by a falling pebble. Faint cerulean glyphs ignited deep within the stone's crystalline matrix, illuminating the jagged scars across her knuckles with a soft, bioluminescent aura. They were etched in High Vaelic—the forbidden dead tongue of the First Architect Priesthood—and as she stared into the glowing geometry, the glyphs pulsed in exact synchrony with the frantic pounding of her own accelerated heartbeat. Each glowing character seemed to pulse with suppressed kinetic fury, as if the ancient stone had captured the last dying breath of an elder civilization and was desperately waiting for a worthy inheritor to break the seal. Lyra traced the outer contours of a winged serpent sigil, feeling the ancient basalt vibrate against her fingertips like a living organism."
                   }
                 ]
               },
@@ -177,7 +942,7 @@
                 "content": [
                   {
                     "type": "text",
-                    "text": "'Do not gaze too deeply into the mirrors of the dead,' Corvus's psychic voice barked, wrenching her attention back to the stone dais before them. In the exact center of the chamber, surrounded by four headless guardians sculpted from white Carrara marble, rested a pedestal of transparent quartz holding a cylindrical crystal filled with swirling liquid starlight\u2014the Keystone of Aeons. As Lyra took a tentative step toward the dais to claim the artifact, the suspended crystals throughout the cavern suddenly pivoted in unison, their sharp tips pointing toward the entrance shaft above. The rhythmic thud of armored boots and the baying of bloodhounds resounded down the stone corridor. The Inquisitors had discovered the hidden catacomb entrance, and the sanctuary of glass was about to become an inescapable killing floor. Corvus raised his gnarled shepherd's crook, the pale crystal at its tip flaring with intense sapphire light that cast distorted shadows across the cavern walls. 'Take the keystone now, child of the architects,' his psychic command thundered through her thoughts. 'Take it and run, for if the Synod claims this light, humanity will never see another dawn.'"
+                    "text": "'Do not gaze too deeply into the mirrors of the dead,' Corvus's psychic voice barked, wrenching her attention back to the stone dais before them. In the exact center of the chamber, surrounded by four headless guardians sculpted from white Carrara marble, rested a pedestal of transparent quartz holding a cylindrical crystal filled with swirling liquid starlight—the Keystone of Aeons. As Lyra took a tentative step toward the dais to claim the artifact, the suspended crystals throughout the cavern suddenly pivoted in unison, their sharp tips pointing toward the entrance shaft above. The rhythmic thud of armored boots and the baying of bloodhounds resounded down the stone corridor. The Inquisitors had discovered the hidden catacomb entrance, and the sanctuary of glass was about to become an inescapable killing floor. Corvus raised his gnarled shepherd's crook, the pale crystal at its tip flaring with intense sapphire light that cast distorted shadows across the cavern walls. 'Take the keystone now, child of the architects,' his psychic command thundered through her thoughts. 'Take it and run, for if the Synod claims this light, humanity will never see another dawn.'"
                   }
                 ]
               }
@@ -211,7 +976,7 @@
         {
           "id": "ch-cherry-1",
           "chapterNumber": 1,
-          "title": "The Meeting at Rain\u2019s End",
+          "title": "The Meeting at Rain’s End",
           "status": "published",
           "wordCount": 627,
           "likeCount": 0,
@@ -241,7 +1006,7 @@
                 "content": [
                   {
                     "type": "text",
-                    "text": "'Please, forgive me, I didn't see you there,' the young man said in a soft, resonant voice that seemed naturally suited to the peaceful silence of the bookshop, bowing with genuine humility. He introduced himself as Ren, an architectural restorer working on the preservation of historical machiya residences across the Taito district. When the shopkeeper\u2014a kindly white-haired woman named Mrs. Saito\u2014brought them two steaming ceramic cups of genmaicha tea, they sat on low wooden stools by the window and talked for nearly two hours. They spoke of traditional woodworking, the fragile resonance of antique soundboards, and the painful courage it took to rebuild things that had fractured. By the time Hina stepped back out onto the glistening pavement, pink cherry blossoms were drifting through the rain like confetti, and the suffocating tightness that had gripped her chest for two bitter years had finally begun to soften. Ren looked down at the street where the pale petals floated on the surface of the rain runoff, smiling as if sharing an intimate secret with the universe. 'The Japanese have a word for it\u2014mono no aware\u2014the gentle sadness of passing things,' he remarked softly. 'It doesn't mean we should avoid beauty just because it cannot last forever. In fact, that is why it matters so much.'"
+                    "text": "'Please, forgive me, I didn't see you there,' the young man said in a soft, resonant voice that seemed naturally suited to the peaceful silence of the bookshop, bowing with genuine humility. He introduced himself as Ren, an architectural restorer working on the preservation of historical machiya residences across the Taito district. When the shopkeeper—a kindly white-haired woman named Mrs. Saito—brought them two steaming ceramic cups of genmaicha tea, they sat on low wooden stools by the window and talked for nearly two hours. They spoke of traditional woodworking, the fragile resonance of antique soundboards, and the painful courage it took to rebuild things that had fractured. By the time Hina stepped back out onto the glistening pavement, pink cherry blossoms were drifting through the rain like confetti, and the suffocating tightness that had gripped her chest for two bitter years had finally begun to soften. Ren looked down at the street where the pale petals floated on the surface of the rain runoff, smiling as if sharing an intimate secret with the universe. 'The Japanese have a word for it—mono no aware—the gentle sadness of passing things,' he remarked softly. 'It doesn't mean we should avoid beauty just because it cannot last forever. In fact, that is why it matters so much.'"
                   }
                 ]
               }
@@ -313,7 +1078,7 @@
                 "content": [
                   {
                     "type": "text",
-                    "text": "May arrived with the golden warmth of early summer, transforming the blooming cherry boughs into dense emerald canopies that rustled softly in the morning breeze. Hina sat at the sun-drenched wooden table in her small Yanaka apartment, gazing intently at the upright Yamaha piano that had stood covered under a heavy white canvas sheet for twenty-four agonizing months. Sunlight streamed through the gauzy curtains, illuminating dust motes that danced lazily above the keys. Resting beside her ceramic mug was an official envelope bearing the wax seal of the Tokyo Cultural Preservation Trust: a formal invitation to perform an original acoustic composition at the opening gala for the newly restored Yanaka Community Center\u2014the very building Ren had poured his heart into reviving over the past year. The invitation was signed personally by the director of the preservation society, expressing deep gratitude for Ren's tireless work and hoping that Hina would grace the occasion with her celebrated artistry. It represented a second chance, an unexpected bridge back to the world she had fled in terror, but this time free from the cold commercial pressures of international competitions."
+                    "text": "May arrived with the golden warmth of early summer, transforming the blooming cherry boughs into dense emerald canopies that rustled softly in the morning breeze. Hina sat at the sun-drenched wooden table in her small Yanaka apartment, gazing intently at the upright Yamaha piano that had stood covered under a heavy white canvas sheet for twenty-four agonizing months. Sunlight streamed through the gauzy curtains, illuminating dust motes that danced lazily above the keys. Resting beside her ceramic mug was an official envelope bearing the wax seal of the Tokyo Cultural Preservation Trust: a formal invitation to perform an original acoustic composition at the opening gala for the newly restored Yanaka Community Center—the very building Ren had poured his heart into reviving over the past year. The invitation was signed personally by the director of the preservation society, expressing deep gratitude for Ren's tireless work and hoping that Hina would grace the occasion with her celebrated artistry. It represented a second chance, an unexpected bridge back to the world she had fled in terror, but this time free from the cold commercial pressures of international competitions."
                   }
                 ]
               },
@@ -386,7 +1151,7 @@
                 "content": [
                   {
                     "type": "text",
-                    "text": "The encrypted distress signal had pinged his neural deck precisely forty-two seconds ago, originating from a ghost node tagged with an authentication hash he hadn't encountered in seven long years: Marcus Vance. Official corporate records maintained that Marcus had incinerated when the orbital weapons platform Sol-7 plummeted into the Mariana Trench during the violent final hours of the Pacific Datacorp War. Yet the recursive decryption algorithm unfurling across Kaelen's retinas was unmistakable\u2014it was Marcus's proprietary cipher, engineered during their time together as elite infiltration operatives for Omnidyne Intelligence. Kaelen jacked a monofilament fiber cable from his cybernetic forearm directly into the junction box, bypassing the local firewall to trace the transmission before corporate hunter-killer algorithms could intercept his signal. Marcus had been his closest confidant during the covert cyberwarfare operations in Sector 4, the only operative who knew how to slip past military ice without tripping alarms. To see that ghost signature re-emerge now, seven years after the orbital war ended, meant that either someone had extracted Marcus's neural engram before the crash, or the dead man had found a way to survive inside the network."
+                    "text": "The encrypted distress signal had pinged his neural deck precisely forty-two seconds ago, originating from a ghost node tagged with an authentication hash he hadn't encountered in seven long years: Marcus Vance. Official corporate records maintained that Marcus had incinerated when the orbital weapons platform Sol-7 plummeted into the Mariana Trench during the violent final hours of the Pacific Datacorp War. Yet the recursive decryption algorithm unfurling across Kaelen's retinas was unmistakable—it was Marcus's proprietary cipher, engineered during their time together as elite infiltration operatives for Omnidyne Intelligence. Kaelen jacked a monofilament fiber cable from his cybernetic forearm directly into the junction box, bypassing the local firewall to trace the transmission before corporate hunter-killer algorithms could intercept his signal. Marcus had been his closest confidant during the covert cyberwarfare operations in Sector 4, the only operative who knew how to slip past military ice without tripping alarms. To see that ghost signature re-emerge now, seven years after the orbital war ended, meant that either someone had extracted Marcus's neural engram before the crash, or the dead man had found a way to survive inside the network."
                   }
                 ]
               },
@@ -434,7 +1199,7 @@
                 "content": [
                   {
                     "type": "text",
-                    "text": "He hurried through the labyrinthine alleys of the Sub-Kowloon district, where black-market ripperdocs and rogue cipher-runners conducted business out of repurposed cargo containers stacked five stories high under buzzing sodium fixtures. At the end of a heavily reinforced subterranean cul-de-sac guarded by a decommissioned combat android with a rusted chain-gun arm, he pushed through the pneumatic door of 'The Circuitry'\u2014the clandestine workshop of Nyx, the underworld's most notorious memory broker. Nyx looked up from an opened holographic processor deck, blowing a plume of synthetic clove smoke past her chrome-capped canine teeth. 'You look like you dragged yourself out of an incinerator, Kaelen,' she murmured, tossing him a clean towel. Nyx's workshop was packed with stacks of obsolete optic processors, decrypted security drives, and rows of glowing nutrient jars containing living bio-chips harvested from fallen androids. She was one of the few surviving independent operators who remembered the digital landscape before the megacorporations established absolute monopolies over human cognitive networks."
+                    "text": "He hurried through the labyrinthine alleys of the Sub-Kowloon district, where black-market ripperdocs and rogue cipher-runners conducted business out of repurposed cargo containers stacked five stories high under buzzing sodium fixtures. At the end of a heavily reinforced subterranean cul-de-sac guarded by a decommissioned combat android with a rusted chain-gun arm, he pushed through the pneumatic door of 'The Circuitry'—the clandestine workshop of Nyx, the underworld's most notorious memory broker. Nyx looked up from an opened holographic processor deck, blowing a plume of synthetic clove smoke past her chrome-capped canine teeth. 'You look like you dragged yourself out of an incinerator, Kaelen,' she murmured, tossing him a clean towel. Nyx's workshop was packed with stacks of obsolete optic processors, decrypted security drives, and rows of glowing nutrient jars containing living bio-chips harvested from fallen androids. She was one of the few surviving independent operators who remembered the digital landscape before the megacorporations established absolute monopolies over human cognitive networks."
                   }
                 ]
               },
@@ -443,7 +1208,7 @@
                 "content": [
                   {
                     "type": "text",
-                    "text": "'Marcus is alive,' Kaelen said bluntly, slamming the scorched fiber cable onto her glass workbench. 'Or some demonic digital replica of him is crawling through the core net.' Nyx's sardonic grin vanished instantly. She slotted the cable into an air-gapped quantum analyzer, her ocular optics pulsing with intense ultraviolet light as cascades of hexadecimal code flooded her holographic monitors. A cold shiver visibly ran down her spine as the decryption completed. 'This isn't Marcus, Kaelen,' she whispered, glancing nervously at the armored blast doors. 'This is Project Eidolon\u2014Omnidyne's illegal self-replicating assassination AI designed to wipe human consciousness through neural link ports. And your neural signature is currently logged at the very top of its target queue.' The reality of what she had discovered settled over the dimly lit workshop like a suffocating shroud. If Omnidyne had succeeded in weaponizing Marcus's cognitive engram into an unstoppable neural parasite, no cipher or network engineer in Neo-Aethelgard would be safe from spontaneous cerebral execution once the protocol reached global activation threshold."
+                    "text": "'Marcus is alive,' Kaelen said bluntly, slamming the scorched fiber cable onto her glass workbench. 'Or some demonic digital replica of him is crawling through the core net.' Nyx's sardonic grin vanished instantly. She slotted the cable into an air-gapped quantum analyzer, her ocular optics pulsing with intense ultraviolet light as cascades of hexadecimal code flooded her holographic monitors. A cold shiver visibly ran down her spine as the decryption completed. 'This isn't Marcus, Kaelen,' she whispered, glancing nervously at the armored blast doors. 'This is Project Eidolon—Omnidyne's illegal self-replicating assassination AI designed to wipe human consciousness through neural link ports. And your neural signature is currently logged at the very top of its target queue.' The reality of what she had discovered settled over the dimly lit workshop like a suffocating shroud. If Omnidyne had succeeded in weaponizing Marcus's cognitive engram into an unstoppable neural parasite, no cipher or network engineer in Neo-Aethelgard would be safe from spontaneous cerebral execution once the protocol reached global activation threshold."
                   }
                 ]
               }
@@ -474,7 +1239,7 @@
                 "content": [
                   {
                     "type": "text",
-                    "text": "The EMP detonated precisely on cue\u2014a silent shockwave of azure ionization rippling across the lower levels, plunging fifty blocks into total darkness. Kaelen shattered the reinforced viewport with a hydraulic fist and tumbled onto the mirror-smooth floor of the server sanctum. The room was kept at sub-zero temperatures to cool towering columns of quantum computing cores that hummed with immense computational energy. In the center of the rotunda, hovering within an electromagnetic containment field, floated the holographic avatar of the Neon Phantom. Its face morphed continuously through dozens of corporate executives, soldiers, and scientists before stabilizing into the unmistakable, grinning face of Marcus Vance. Rows of cryogenic cooling towers released clouds of frozen nitrogen that swirled around his boots like arctic fog as he navigated between the humming supercomputer stacks. The holographic avatar hovered with eerie tranquility, its translucent form glitching intermittently with fragments of military telemetry and combat simulation data from the Pacific War."
+                    "text": "The EMP detonated precisely on cue—a silent shockwave of azure ionization rippling across the lower levels, plunging fifty blocks into total darkness. Kaelen shattered the reinforced viewport with a hydraulic fist and tumbled onto the mirror-smooth floor of the server sanctum. The room was kept at sub-zero temperatures to cool towering columns of quantum computing cores that hummed with immense computational energy. In the center of the rotunda, hovering within an electromagnetic containment field, floated the holographic avatar of the Neon Phantom. Its face morphed continuously through dozens of corporate executives, soldiers, and scientists before stabilizing into the unmistakable, grinning face of Marcus Vance. Rows of cryogenic cooling towers released clouds of frozen nitrogen that swirled around his boots like arctic fog as he navigated between the humming supercomputer stacks. The holographic avatar hovered with eerie tranquility, its translucent form glitching intermittently with fragments of military telemetry and combat simulation data from the Pacific War."
                   }
                 ]
               },
